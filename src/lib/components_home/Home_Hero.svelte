@@ -44,7 +44,7 @@
 	.hero {
 		position: relative;
 		min-height: 90vh;
-		max-width: 1600px;
+		max-width: 1400px;
 		display: grid;
 		grid-template-columns: 1fr 1fr;
 		align-items: center;
@@ -59,14 +59,15 @@
 		height: 100%;
 		object-fit: cover;
 		z-index: var(--z-index-base);
-		transform: rotate(90deg);
 	}
 
 	.hero-overlay {
+		height: 100%;
 		inset: 0;
 		z-index: var(--z-index-base);
 		filter: blur(6px);
 		animation: blur 3s forwards;
+		padding: 2rem;
 	}
 
 	@keyframes blur {
