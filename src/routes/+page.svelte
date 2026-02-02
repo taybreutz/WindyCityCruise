@@ -4,7 +4,7 @@
 
 <Home_Hero
 	title="Chicago Boat Rentals"
-	subtitle="The Best Boats, Yachts, and Experiences in Chicago"
+	subtitle="The Best Boats, Yachts, and Experiences in Chicago all in one place."
 	ctaText="Book Now"
 	ctaHref="/book"
 	ctaText2="Explore Boats"

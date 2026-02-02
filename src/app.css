@@ -155,7 +155,7 @@
   --radius-full: 9999px;
 
   /* Component Border Radius */
-  --radius-component-button: 12px;
+  --radius-component-button: 6px;
   --radius-component-input: 8px;
   --radius-component-card: 16px;
   --radius-component-modal: 20px;

@@ -10,7 +10,7 @@
 
 	let {
 		title = 'Chicago Boat Rentals',
-		subtitle = 'The Best Boats, Yachts, and Experiences in Chicago',
+		subtitle = 'The Best Boats, Yachts, and Experiences in Chicago all in one place.',
 		ctaText = 'Book Now',
 		ctaHref = '/book',
 		ctaText2 = 'Explore Boats',
@@ -46,7 +46,7 @@
 		min-height: 90vh;
 		max-width: 1400px;
 		display: grid;
-		grid-template-columns: 1fr 1fr;
+		grid-template-columns: 1fr 1.5fr;
 		align-items: center;
 		justify-content: center;
 		overflow: hidden;
@@ -59,6 +59,7 @@
 		height: 100%;
 		object-fit: cover;
 		z-index: var(--z-index-base);
+		border-radius: var(--radius-component-card);
 	}
 
 	.hero-overlay {
@@ -66,7 +67,7 @@
 		inset: 0;
 		z-index: var(--z-index-base);
 		filter: blur(6px);
-		animation: blur 3s forwards;
+		animation: blur 1s forwards;
 		padding: 2rem;
 	}
 
@@ -96,7 +97,7 @@
 		font-weight: var(--font-weight-large-title);
 		line-height: var(--line-height-large-title);
 		letter-spacing: var(--letter-spacing-large-title);
-		color: var(--color-text-inverse);
+		color: var(--color-text-primary);
 		margin: 0;
 	}
 
@@ -105,7 +106,7 @@
 		font-weight: var(--font-weight-body);
 		line-height: var(--line-height-title3);
 		letter-spacing: var(--letter-spacing-title3);
-		color: var(--color-text-inverse);
+		color: var(--color-text-primary);
 		opacity: 0.9;
 		max-width: 600px;
 		margin: 0;

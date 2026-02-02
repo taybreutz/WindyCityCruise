@@ -19,7 +19,7 @@ color: var(--color-text-primary);
 ## Token Reference Path
 
 ```
-design-tokens.css
+app.css
 ├── --primitive-*     → Raw values (DO NOT use directly)
 └── --color-*, --typography-*, --spacing-*, etc. → Use these in all components
 ```
@@ -186,7 +186,7 @@ The design tokens CSS file includes both `@media (prefers-color-scheme: dark)` f
 Simply import the CSS file and tokens will automatically adapt to system preferences:
 
 ```css
-@import 'design-tokens.css';
+@import 'app.css';
 ```
 
 ### Manual Dark Mode Toggle (Svelte)
@@ -337,6 +337,6 @@ zIndex.tooltip  = 700  (tooltips, highest)
 
 ## File Reference
 
-- **Token source**: `design-tokens.css`
+- **Token source**: `app.css`
 - **Format**: CSS Custom Properties (CSS Variables)
 - **Dark mode**: Automatic via `prefers-color-scheme` or manual via `.dark` class
