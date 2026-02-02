@@ -19,9 +19,9 @@ color: var(--color-text-primary);
 ## Token Reference Path
 
 ```
-design-tokens.json
-├── primitive.*     → Raw values (DO NOT use directly)
-└── semantic.*      → Use these in all components
+design-tokens.css
+├── --primitive-*     → Raw values (DO NOT use directly)
+└── --color-*, --typography-*, --spacing-*, etc. → Use these in all components
 ```
 
 ---
@@ -179,25 +179,17 @@ spacing.16 = 64px  (large section)
 
 ## Light/Dark Mode Implementation
 
-All semantic color tokens include `$extensions.mode` with `light` and `dark` values.
+The design tokens CSS file includes both `@media (prefers-color-scheme: dark)` for automatic system preference detection and a `.dark` class for manual toggle control.
 
-### CSS Implementation Pattern
+### Usage
+
+Simply import the CSS file and tokens will automatically adapt to system preferences:
 
 ```css
-:root {
-  --color-text-primary: #111827;
-  --color-surface-background: #FFFFFF;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --color-text-primary: #FFFFFF;
-    --color-surface-background: #000000;
-  }
-}
+@import 'design-tokens.css';
 ```
 
-### Svelte Implementation Pattern
+### Manual Dark Mode Toggle (Svelte)
 
 ```svelte
 <script>
@@ -212,10 +204,10 @@ All semantic color tokens include `$extensions.mode` with `light` and `dark` val
   });
 </script>
 
-<div class:dark={darkMode}>
-  <!-- content -->
-</div>
+<svelte:body class:dark={darkMode} />
 ```
+
+Or apply the `.dark` class to your root element for manual control.
 
 ---
 
@@ -345,6 +337,6 @@ zIndex.tooltip  = 700  (tooltips, highest)
 
 ## File Reference
 
-- **Token source**: `design-tokens.json`
-- **Spec compliance**: W3C Design Tokens Community Group Format
-- **Compatible tools**: Style Dictionary, Figma Tokens, Token Studio
+- **Token source**: `design-tokens.css`
+- **Format**: CSS Custom Properties (CSS Variables)
+- **Dark mode**: Automatic via `prefers-color-scheme` or manual via `.dark` class
