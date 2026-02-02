@@ -19,6 +19,14 @@
 </script>
 
 <section class="hero">
+	<div class="hero-content">
+		<h1 class="hero-title">{title}</h1>
+		<p class="hero-subtitle">{subtitle}</p>
+		<div class="hero-cta-container">
+			<a href={ctaHref} class="hero-cta">{ctaText}</a>
+			<a href={ctaHref2} class="hero-cta">{ctaText2}</a>
+		</div>
+	</div>
 	<div class="hero-overlay">
 		<video
 			src="https://cdn.shopify.com/videos/c/o/v/11ba9511dd96488baa7ab28c502cf80a.mp4"
@@ -30,45 +38,32 @@
 			class="hero-video"
 		></video>
 	</div>
-	<div class="hero-content">
-		<h1 class="hero-title">{title}</h1>
-		<p class="hero-subtitle">{subtitle}</p>
-		<div class="hero-cta-container">
-			<a href={ctaHref} class="hero-cta">{ctaText}</a>
-			<a href={ctaHref2} class="hero-cta">{ctaText2}</a>
-		</div>
-	</div>
 </section>
 
 <style>
 	.hero {
 		position: relative;
 		min-height: 90vh;
-		display: flex;
+		max-width: 1600px;
+		display: grid;
+		grid-template-columns: 1fr 1fr;
 		align-items: center;
 		justify-content: center;
-		background-color: var(--color-surface-inverse);
-		background-image: linear-gradient(
-			135deg,
-			var(--color-surface-inverse) 0%,
-			var(--color-fill-accent) 100%
-		);
 		overflow: hidden;
+		margin: 0 auto;
 	}
 
 	.hero-video {
-		position: absolute;
 		inset: 0;
 		width: 100%;
 		height: 100%;
 		object-fit: cover;
 		z-index: var(--z-index-base);
+		transform: rotate(90deg);
 	}
 
 	.hero-overlay {
-		position: absolute;
 		inset: 0;
-		background: linear-gradient(180deg, rgba(10, 37, 64, 0.3) 0%, rgba(10, 37, 64, 0.6) 100%);
 		z-index: var(--z-index-base);
 		filter: blur(6px);
 		animation: blur 3s forwards;
