@@ -1,0 +1,301 @@
+/* Chicago Boating Hub - Design Token CSS Variables */
+/* Generated from design-tokens.json - Use semantic tokens only */
+
+:root {
+  /* Typography - Font Family */
+  --font-family-system: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', 'Segoe UI', Roboto, system-ui, sans-serif;
+  --font-family-mono: 'SF Mono', SFMono-Regular, ui-monospace, Menlo, Monaco, 'Cascadia Mono', 'Segoe UI Mono', 'Roboto Mono', monospace;
+
+  /* Typography - Semantic Styles */
+  --font-size-large-title: 34px;
+  --line-height-large-title: 41px;
+  --letter-spacing-large-title: 0.37px;
+  --font-weight-large-title: 700;
+
+  --font-size-title1: 28px;
+  --line-height-title1: 34px;
+  --letter-spacing-title1: 0.36px;
+  --font-weight-title1: 700;
+
+  --font-size-title2: 22px;
+  --line-height-title2: 28px;
+  --letter-spacing-title2: 0.35px;
+  --font-weight-title2: 700;
+
+  --font-size-title3: 20px;
+  --line-height-title3: 25px;
+  --letter-spacing-title3: 0.38px;
+  --font-weight-title3: 600;
+
+  --font-size-headline: 17px;
+  --line-height-headline: 22px;
+  --letter-spacing-headline: -0.41px;
+  --font-weight-headline: 600;
+
+  --font-size-body: 17px;
+  --line-height-body: 22px;
+  --letter-spacing-body: -0.41px;
+  --font-weight-body: 400;
+
+  --font-size-callout: 16px;
+  --line-height-callout: 21px;
+  --letter-spacing-callout: -0.32px;
+
+  --font-size-subheadline: 15px;
+  --line-height-subheadline: 20px;
+  --letter-spacing-subheadline: -0.24px;
+
+  --font-size-footnote: 13px;
+  --line-height-footnote: 18px;
+  --letter-spacing-footnote: -0.08px;
+
+  --font-size-caption1: 12px;
+  --line-height-caption1: 16px;
+  --letter-spacing-caption1: 0px;
+
+  --font-size-caption2: 11px;
+  --line-height-caption2: 13px;
+  --letter-spacing-caption2: 0.07px;
+
+  /* Semantic Colors - Text */
+  --color-text-primary: #111827;
+  --color-text-secondary: #4B5563;
+  --color-text-tertiary: #6B7280;
+  --color-text-inverse: #FFFFFF;
+  --color-text-disabled: #9CA3AF;
+  --color-text-link: #0077B6;
+  --color-text-success: #047857;
+  --color-text-warning: #B45309;
+  --color-text-error: #DC2626;
+
+  /* Semantic Colors - Surface */
+  --color-surface-background: #FFFFFF;
+  --color-surface-primary: #F8F9FA;
+  --color-surface-secondary: #F3F4F6;
+  --color-surface-elevated: #FFFFFF;
+  --color-surface-grouped: #F9FAFB;
+  --color-surface-overlay: rgba(0, 0, 0, 0.4);
+  --color-surface-inverse: #0A2540;
+
+  /* Semantic Colors - Fill */
+  --color-fill-primary: #0A2540;
+  --color-fill-secondary: #E5E7EB;
+  --color-fill-tertiary: #F3F4F6;
+  --color-fill-accent: #0077B6;
+  --color-fill-accent-subtle: #E6F4FA;
+  --color-fill-success: #10B981;
+  --color-fill-success-subtle: #ECFDF5;
+  --color-fill-warning: #F59E0B;
+  --color-fill-warning-subtle: #FFFBEB;
+  --color-fill-destructive: #EF4444;
+  --color-fill-destructive-subtle: #FEF2F2;
+  --color-fill-disabled: #E5E7EB;
+
+  /* Semantic Colors - Border */
+  --color-border-subtle: #E5E7EB;
+  --color-border-default: #D1D5DB;
+  --color-border-strong: #9CA3AF;
+  --color-border-focus: #0077B6;
+  --color-border-error: #EF4444;
+  --color-border-disabled: #E5E7EB;
+
+  /* Semantic Colors - Interactive */
+  --color-interactive-primary-default: #0077B6;
+  --color-interactive-primary-hover: #005F92;
+  --color-interactive-primary-active: #00476D;
+
+  --color-interactive-secondary-default: #0A2540;
+  --color-interactive-secondary-hover: #003049;
+  --color-interactive-secondary-active: #2B2E34;
+
+  --color-interactive-destructive-default: #EF4444;
+  --color-interactive-destructive-hover: #DC2626;
+  --color-interactive-destructive-active: #B91C1C;
+
+  /* Spacing */
+  --spacing-0: 0px;
+  --spacing-1: 4px;
+  --spacing-2: 8px;
+  --spacing-3: 12px;
+  --spacing-4: 16px;
+  --spacing-5: 20px;
+  --spacing-6: 24px;
+  --spacing-8: 32px;
+  --spacing-10: 40px;
+  --spacing-12: 48px;
+  --spacing-16: 64px;
+  --spacing-20: 80px;
+  --spacing-24: 96px;
+  --spacing-32: 128px;
+
+  /* Component Spacing */
+  --spacing-component-button-padding-x: 16px;
+  --spacing-component-button-padding-y: 8px;
+  --spacing-component-button-gap: 8px;
+  --spacing-component-input-padding-x: 12px;
+  --spacing-component-input-padding-y: 8px;
+  --spacing-component-card-padding: 16px;
+  --spacing-component-card-gap: 12px;
+
+  /* Layout Spacing */
+  --spacing-layout-gutter: 16px;
+  --spacing-layout-section-gap: 48px;
+  --spacing-layout-page-margin: 16px;
+  --spacing-layout-content-max-width: 1200px;
+
+  /* Border Radius */
+  --radius-none: 0px;
+  --radius-xs: 2px;
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-2xl: 20px;
+  --radius-3xl: 24px;
+  --radius-full: 9999px;
+
+  /* Component Border Radius */
+  --radius-component-button: 12px;
+  --radius-component-input: 8px;
+  --radius-component-card: 16px;
+  --radius-component-modal: 20px;
+  --radius-component-badge: 9999px;
+  --radius-component-avatar: 9999px;
+  --radius-component-tooltip: 8px;
+
+  /* Border Width */
+  --border-width-thin: 1px;
+  --border-width-default: 1px;
+  --border-width-thick: 2px;
+  --border-width-focus: 2px;
+
+  /* Elevation */
+  --elevation-flat: none;
+  --elevation-raised: 0px 1px 3px 0px rgba(0, 0, 0, 0.1);
+  --elevation-floating: 0px 4px 12px 0px rgba(0, 0, 0, 0.08), 0px 2px 4px 0px rgba(0, 0, 0, 0.04);
+  --elevation-modal: 0px 16px 48px -8px rgba(0, 0, 0, 0.12), 0px 8px 16px -4px rgba(0, 0, 0, 0.08);
+
+  /* Motion */
+  --motion-duration-instant: 0ms;
+  --motion-duration-fast: 100ms;
+  --motion-duration-normal: 200ms;
+  --motion-duration-slow: 300ms;
+  --motion-duration-slower: 400ms;
+
+  --motion-easing-default: cubic-bezier(0.25, 0.1, 0.25, 1);
+  --motion-easing-ease-in: cubic-bezier(0.42, 0, 1, 1);
+  --motion-easing-ease-out: cubic-bezier(0, 0, 0.58, 1);
+  --motion-easing-ease-in-out: cubic-bezier(0.42, 0, 0.58, 1);
+  --motion-easing-spring: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+
+  /* Z-Index */
+  --z-index-base: 0;
+  --z-index-dropdown: 100;
+  --z-index-sticky: 200;
+  --z-index-overlay: 300;
+  --z-index-modal: 400;
+  --z-index-popover: 500;
+  --z-index-toast: 600;
+  --z-index-tooltip: 700;
+}
+
+/* Dark Mode */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-text-primary: #FFFFFF;
+    --color-text-secondary: #9CA3AF;
+    --color-text-tertiary: #6B7280;
+    --color-text-inverse: #111827;
+    --color-text-disabled: #4B5563;
+    --color-text-link: #33A7D7;
+    --color-text-success: #34D399;
+    --color-text-warning: #FBBF24;
+    --color-text-error: #F87171;
+
+    --color-surface-background: #000000;
+    --color-surface-primary: #1C1C1E;
+    --color-surface-secondary: #2C2C2E;
+    --color-surface-elevated: #2C2C2E;
+    --color-surface-grouped: #1C1C1E;
+    --color-surface-overlay: rgba(0, 0, 0, 0.6);
+    --color-surface-inverse: #F8F9FA;
+
+    --color-fill-primary: #F8F9FA;
+    --color-fill-secondary: #374151;
+    --color-fill-tertiary: #1F2937;
+    --color-fill-accent: #33A7D7;
+    --color-fill-accent-subtle: rgba(0, 119, 182, 0.2);
+    --color-fill-success-subtle: rgba(16, 185, 129, 0.2);
+    --color-fill-warning-subtle: rgba(245, 158, 11, 0.2);
+    --color-fill-destructive-subtle: rgba(239, 68, 68, 0.2);
+    --color-fill-disabled: #374151;
+
+    --color-border-subtle: #1F2937;
+    --color-border-default: #374151;
+    --color-border-strong: #4B5563;
+    --color-border-focus: #33A7D7;
+    --color-border-error: #F87171;
+    --color-border-disabled: #1F2937;
+
+    --color-interactive-primary-default: #33A7D7;
+    --color-interactive-primary-hover: #66BDE1;
+    --color-interactive-primary-active: #99D3EB;
+
+    --color-interactive-secondary-default: #F8F9FA;
+    --color-interactive-secondary-hover: #E5E7EB;
+    --color-interactive-secondary-active: #D1D5DB;
+
+    --color-interactive-destructive-hover: #F87171;
+    --color-interactive-destructive-active: #FCA5A5;
+
+    --elevation-raised: 0px 1px 3px 0px rgba(0, 0, 0, 0.3);
+    --elevation-floating: 0px 4px 12px 0px rgba(0, 0, 0, 0.4), 0px 2px 4px 0px rgba(0, 0, 0, 0.2);
+    --elevation-modal: 0px 16px 48px -8px rgba(0, 0, 0, 0.5), 0px 8px 16px -4px rgba(0, 0, 0, 0.3);
+  }
+}
+
+/* Reset and Base Styles */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-family: var(--font-family-system);
+  font-size: var(--font-size-body);
+  line-height: var(--line-height-body);
+  letter-spacing: var(--letter-spacing-body);
+  color: var(--color-text-primary);
+  background-color: var(--color-surface-background);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  min-height: 100vh;
+}
+
+a {
+  color: var(--color-text-link);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+  border: none;
+  background: none;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
