@@ -102,7 +102,6 @@
 		letter-spacing: var(--letter-spacing-large-title);
 		color: var(--color-text-inverse);
 		margin: 0;
-		mix-blend-mode: difference;
 	}
 
 	.hero-subtitle {
