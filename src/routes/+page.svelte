@@ -1,12 +1,14 @@
 <script lang="ts">
-	import Home_Hero from '$lib/components/Home_Hero.svelte';
+	import Home_Hero from '$lib/components_home/Home_Hero.svelte';
 </script>
 
 <Home_Hero
 	title="Chicago Boat Rentals"
 	subtitle="The Best Boats, Yachts, and Experiences in Chicago"
-	ctaText="Explore Boats"
-	ctaHref="/boats"
+	ctaText="Book Now"
+	ctaHref="/book"
+	ctaText2="Explore Boats"
+	ctaHref2="/boats"
 />
 
 <section class="content-section">

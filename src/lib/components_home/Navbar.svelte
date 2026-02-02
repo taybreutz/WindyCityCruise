@@ -34,14 +34,14 @@
 		left: 0;
 		right: 0;
 		z-index: var(--z-index-sticky);
-		background-color: transparent;
+		color: var(--color-text-primary);
+		background-color: var(--color-surface-elevated);
 		transition:
 			background-color var(--motion-duration-normal) var(--motion-easing-default),
 			box-shadow var(--motion-duration-normal) var(--motion-easing-default);
 	}
 
 	.navbar.scrolled {
-		background-color: var(--color-surface-elevated);
 		box-shadow: var(--elevation-raised);
 	}
 
@@ -57,7 +57,7 @@
 
 	.logo {
 		text-decoration: none;
-		color: var(--color-text-inverse);
+		color: var(--color-text-primary);
 		transition: color var(--motion-duration-fast) var(--motion-easing-default);
 	}
 
@@ -83,7 +83,7 @@
 		font-weight: var(--font-weight-body);
 		line-height: var(--line-height-body);
 		letter-spacing: var(--letter-spacing-body);
-		color: var(--color-text-inverse);
+		color: var(--color-text-primary);
 		text-decoration: none;
 		transition: color var(--motion-duration-fast) var(--motion-easing-default);
 	}

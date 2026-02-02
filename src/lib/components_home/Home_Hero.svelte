@@ -4,22 +4,39 @@
 		subtitle?: string;
 		ctaText?: string;
 		ctaHref?: string;
+		ctaText2?: string;
+		ctaHref2?: string;
 	}
 
 	let {
 		title = 'Chicago Boat Rentals',
 		subtitle = 'The Best Boats, Yachts, and Experiences in Chicago',
-		ctaText = 'Explore Boats',
-		ctaHref = '/boats'
+		ctaText = 'Book Now',
+		ctaHref = '/book',
+		ctaText2 = 'Explore Boats',
+		ctaHref2 = '/boats'
 	}: Props = $props();
 </script>
 
 <section class="hero">
-	<div class="hero-overlay"></div>
+	<div class="hero-overlay">
+		<video
+			src="https://cdn.shopify.com/videos/c/o/v/11ba9511dd96488baa7ab28c502cf80a.mp4"
+			autoplay
+			loop
+			muted
+			playsinline
+			preload="auto"
+			class="hero-video"
+		></video>
+	</div>
 	<div class="hero-content">
 		<h1 class="hero-title">{title}</h1>
 		<p class="hero-subtitle">{subtitle}</p>
-		<a href={ctaHref} class="hero-cta">{ctaText}</a>
+		<div class="hero-cta-container">
+			<a href={ctaHref} class="hero-cta">{ctaText}</a>
+			<a href={ctaHref2} class="hero-cta">{ctaText2}</a>
+		</div>
 	</div>
 </section>
 
@@ -39,11 +56,31 @@
 		overflow: hidden;
 	}
 
+	.hero-video {
+		position: absolute;
+		inset: 0;
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		z-index: var(--z-index-base);
+	}
+
 	.hero-overlay {
 		position: absolute;
 		inset: 0;
 		background: linear-gradient(180deg, rgba(10, 37, 64, 0.3) 0%, rgba(10, 37, 64, 0.6) 100%);
 		z-index: var(--z-index-base);
+		filter: blur(6px);
+		animation: blur 3s forwards;
+	}
+
+	@keyframes blur {
+		0% {
+			filter: blur(6px);
+		}
+		100% {
+			filter: blur(0px);
+		}
 	}
 
 	.hero-content {
@@ -65,6 +102,7 @@
 		letter-spacing: var(--letter-spacing-large-title);
 		color: var(--color-text-inverse);
 		margin: 0;
+		mix-blend-mode: difference;
 	}
 
 	.hero-subtitle {
@@ -76,6 +114,12 @@
 		opacity: 0.9;
 		max-width: 600px;
 		margin: 0;
+	}
+
+	.hero-cta-container {
+		display: flex;
+		flex-direction: row;
+		gap: var(--spacing-4);
 	}
 
 	.hero-cta {
