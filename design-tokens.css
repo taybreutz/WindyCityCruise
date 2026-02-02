@@ -97,15 +97,15 @@
   --primitive-opacity-90: 0.9;
   --primitive-opacity-100: 1;
 
-  /* Border Radius */
+  /* Border Radius - Sharper, more refined */
   --primitive-radius-none: 0px;
   --primitive-radius-xs: 2px;
-  --primitive-radius-sm: 4px;
-  --primitive-radius-md: 8px;
-  --primitive-radius-lg: 12px;
-  --primitive-radius-xl: 16px;
-  --primitive-radius-2xl: 20px;
-  --primitive-radius-3xl: 24px;
+  --primitive-radius-sm: 3px;
+  --primitive-radius-md: 6px;
+  --primitive-radius-lg: 8px;
+  --primitive-radius-xl: 12px;
+  --primitive-radius-2xl: 16px;
+  --primitive-radius-3xl: 20px;
   --primitive-radius-full: 9999px;
 
   /* Spacing */
@@ -128,31 +128,31 @@
   --primitive-font-family-system: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', 'Segoe UI', Roboto, system-ui, sans-serif;
   --primitive-font-family-mono: 'SF Mono', SFMono-Regular, ui-monospace, Menlo, Monaco, 'Cascadia Mono', 'Segoe UI Mono', 'Roboto Mono', monospace;
 
-  /* Font Sizes */
-  --primitive-font-size-caption2: 11px;
-  --primitive-font-size-caption1: 12px;
-  --primitive-font-size-footnote: 13px;
-  --primitive-font-size-subheadline: 15px;
-  --primitive-font-size-callout: 16px;
-  --primitive-font-size-body: 17px;
-  --primitive-font-size-headline: 17px;
-  --primitive-font-size-title3: 20px;
-  --primitive-font-size-title2: 22px;
-  --primitive-font-size-title1: 28px;
-  --primitive-font-size-large-title: 34px;
+  /* Font Sizes - Refined for modern, sharper aesthetic */
+  --primitive-font-size-caption2: 10px;
+  --primitive-font-size-caption1: 11px;
+  --primitive-font-size-footnote: 12px;
+  --primitive-font-size-subheadline: 13px;
+  --primitive-font-size-callout: 14px;
+  --primitive-font-size-body: 15px;
+  --primitive-font-size-headline: 15px;
+  --primitive-font-size-title3: 18px;
+  --primitive-font-size-title2: 20px;
+  --primitive-font-size-title1: 26px;
+  --primitive-font-size-large-title: 32px;
 
-  /* Line Heights */
-  --primitive-line-height-caption2: 13px;
-  --primitive-line-height-caption1: 16px;
-  --primitive-line-height-footnote: 18px;
-  --primitive-line-height-subheadline: 20px;
-  --primitive-line-height-callout: 21px;
-  --primitive-line-height-body: 22px;
-  --primitive-line-height-headline: 22px;
-  --primitive-line-height-title3: 25px;
-  --primitive-line-height-title2: 28px;
-  --primitive-line-height-title1: 34px;
-  --primitive-line-height-large-title: 41px;
+  /* Line Heights - Tighter for refined look */
+  --primitive-line-height-caption2: 12px;
+  --primitive-line-height-caption1: 14px;
+  --primitive-line-height-footnote: 16px;
+  --primitive-line-height-subheadline: 18px;
+  --primitive-line-height-callout: 20px;
+  --primitive-line-height-body: 20px;
+  --primitive-line-height-headline: 20px;
+  --primitive-line-height-title3: 24px;
+  --primitive-line-height-title2: 26px;
+  --primitive-line-height-title1: 32px;
+  --primitive-line-height-large-title: 38px;
 
   /* Font Weights */
   --primitive-font-weight-regular: 400;
@@ -160,18 +160,18 @@
   --primitive-font-weight-semibold: 600;
   --primitive-font-weight-bold: 700;
 
-  /* Letter Spacing (Tracking) */
-  --primitive-tracking-caption2: 0.07px;
+  /* Letter Spacing (Tracking) - Tighter for sharper text */
+  --primitive-tracking-caption2: 0.02px;
   --primitive-tracking-caption1: 0px;
-  --primitive-tracking-footnote: -0.08px;
-  --primitive-tracking-subheadline: -0.24px;
-  --primitive-tracking-callout: -0.32px;
-  --primitive-tracking-body: -0.41px;
-  --primitive-tracking-headline: -0.41px;
-  --primitive-tracking-title3: 0.38px;
-  --primitive-tracking-title2: 0.35px;
-  --primitive-tracking-title1: 0.36px;
-  --primitive-tracking-large-title: 0.37px;
+  --primitive-tracking-footnote: -0.1px;
+  --primitive-tracking-subheadline: -0.2px;
+  --primitive-tracking-callout: -0.25px;
+  --primitive-tracking-body: -0.3px;
+  --primitive-tracking-headline: -0.3px;
+  --primitive-tracking-title3: -0.2px;
+  --primitive-tracking-title2: -0.3px;
+  --primitive-tracking-title1: -0.4px;
+  --primitive-tracking-large-title: -0.5px;
 
 
   /* ========================================
