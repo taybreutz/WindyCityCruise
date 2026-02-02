@@ -1,90 +1,131 @@
-# Design Token System Guide for AI Agents
+# Apple HIG–Aligned Design Token System
+**Single Source of Truth for AI Agents, Engineers, and Designers**
 
-This document explains how to use the Chicago Boating Hub design token system when generating code, making design decisions, or assisting with UI development.
+This document defines a production-ready, Apple-first design token system aligned with Apple Human Interface Guidelines. It is intentionally restrained, semantic-first, and optimized for clarity, deference, and subtle depth.
 
-## Core Principle: Semantic First
+---
 
-**Never use primitive tokens directly in components.** Always use semantic tokens that describe the purpose, not the color.
+## 📋 Table of Contents
+- [1. Design Principles](#1-design-principles)
+- [2. Semantic Token Rule](#2-semantic-token-rule)
+- [3. Token Architecture](#3-token-architecture)
+- [4. Color System](#4-color-system)
+    - [4.1 Text Colors](#41-text-colors)
+    - [4.2 Surface Colors](#42-surface-colors)
+    - [4.3 Fill Colors](#43-fill-colors)
+    - [4.4 Border Colors](#44-border-colors)
+- [5. Interactive States](#5-interactive-states)
+- [6. Typography](#6-typography)
+- [7. Elevation & Depth](#7-elevation--depth)
+- [8. Spacing System](#8-spacing-system)
+- [9. Border Radius](#9-border-radius)
+- [10. Z-Index Layers](#10-z-index-layers)
+- [11. Motion & Animation](#11-motion--animation)
+- [12. Common Patterns](#12-common-patterns)
+- [13. Decision Rules for AI](#13-decision-rules-for-ai)
+
+---
+
+## 1. Design Principles
+
+> [!IMPORTANT]
+> These principles are non-negotiable and must guide every design decision.
+
+- **Clarity:** UI exists to communicate content and actions with zero ambiguity. Hierarchy must be obvious.
+- **Deference:** Interface elements step back. Content, data, and user intent lead.
+- **Depth:** Communicated through layering, opacity, blur, and restrained shadow. Never heavy contrast.
+- **Consistency:** All values MUST come from tokens. No one-off decisions or "magic numbers."
+- **Accessibility:** Readable by default. Predictable focus. Motion respects user settings.
+
+---
+
+## 2. Semantic Token Rule
+
+> [!WARNING]
+> **Never use primitive tokens or raw values directly in components.**
+> Always reference semantic tokens that describe the **intent** or **purpose**.
 
 ```css
-/* WRONG */
-background-color: var(--primitive-color-teal-blue);
-color: var(--primitive-color-gray-900);
+/* ❌ Incorrect */
+background-color: #0077b6;
+color: var(--primitive-color-prussian-blue);
 
-/* CORRECT */
+/* ✅ Correct */
 background-color: var(--color-fill-accent);
 color: var(--color-text-primary);
 ```
 
-## Token Reference Path
+---
 
-```
+## 3. Token Architecture
+
+All tokens are defined in `app.css` and follow a hierarchical structure:
+
+```text
 app.css
-├── --primitive-*     → Raw values (DO NOT use directly)
-└── --color-*, --typography-*, --spacing-*, etc. → Use these in all components
+├── --primitive-*     → Raw values (INTERNALfoundation - do not use)
+├── --color-*         → Semantic color roles (text, surface, border)
+├── --typography-*    → Type styles (size, weight, line-height)
+├── --spacing-*       → Spacing & layout (4px grid)
+├── --radius-*        → Corner radii
+├── --elevation-*     → Surface depth (shadows)
+├── --motion-*        → Timing & easing
+└── --zIndex-*        → Layering
 ```
 
 ---
 
-## Color Token Selection Guide
+## 4. Color System
 
-### Text Colors
+> [!NOTE]
+> This system is **Light Mode Only**. Neutrals dominate all surfaces, while accents are sparse and purposeful.
 
-| Use Case | Token | When to Use |
-|----------|-------|-------------|
-| `color.text.primary` | Main body text, headings | Default for all readable content |
-| `color.text.secondary` | Subtitles, descriptions, metadata | Supporting text, less emphasis |
-| `color.text.tertiary` | Placeholders, hints, timestamps | Lowest emphasis text |
-| `color.text.inverse` | Text on dark/filled backgrounds | Buttons with `fill.primary`, dark cards |
-| `color.text.disabled` | Disabled form fields, inactive items | Any disabled state |
-| `color.text.link` | Clickable text links | Hyperlinks, inline actions |
-| `color.text.success` | Success messages | Confirmation text |
-| `color.text.warning` | Warning messages | Caution text |
-| `color.text.error` | Error messages, validation | Form errors, alerts |
+### 4.1 Text Colors
 
-### Surface Colors
+| Token | Use Case | When to Use |
+| :--- | :--- | :--- |
+| `var(--color-text-primary)` | Main Body & Headings | Default for all readable content |
+| `var(--color-text-secondary)`| Subtitles & Descriptions | Supporting text, secondary labels |
+| `var(--color-text-tertiary)` | Metadata & Placeholders | Lowest emphasis text, timestamps |
+| `var(--color-text-inverse)`  | Contrast Text | Text on filled/accent surfaces (e.g., buttons) |
+| `var(--color-text-link)`     | Inline Links | Clickable text within paragraphs |
+| `var(--color-text-success)`  | Success State | Positive feedback or confirmation text |
+| `var(--color-text-error)`    | Error State | Validation errors and critical alerts |
 
-| Use Case | Token | When to Use |
-|----------|-------|-------------|
-| `color.surface.background` | Page background | Root-level background |
-| `color.surface.primary` | Main content areas | Cards, sections on background |
-| `color.surface.secondary` | Nested containers | Cards within cards, sidebars |
-| `color.surface.elevated` | Floating elements | Dropdowns, popovers, modals |
-| `color.surface.grouped` | Grouped list backgrounds | Settings lists, table rows |
-| `color.surface.overlay` | Backdrop behind modals | Modal/dialog overlays |
-| `color.surface.inverse` | Dark sections | Hero sections, footers |
+### 4.2 Surface Colors
 
-### Fill Colors
+| Token | Use Case | Implementation Rule |
+| :--- | :--- | :--- |
+| `var(--color-surface-background)` | Page Root | The primary background of the entire viewport |
+| `var(--color-surface-primary)`    | Main Content Area | Cards or sections sitting on the background |
+| `var(--color-surface-secondary)`  | Nested Containers | Inner cards, sidebar backgrounds |
+| `var(--color-surface-elevated)`   | Floating UI | Popovers, dropdowns, and modal dialogs |
+| `var(--color-surface-inverse)`    | Dark Sections | Rare, intentional dark areas (e.g., Footer) |
 
-| Use Case | Token | When to Use |
-|----------|-------|-------------|
-| `color.fill.primary` | Primary buttons, key actions | Main CTA buttons |
-| `color.fill.secondary` | Secondary buttons, tags | Less prominent actions |
-| `color.fill.tertiary` | Subtle backgrounds | Hover states, badges |
-| `color.fill.accent` | Brand accent elements | Icons, highlights, progress |
-| `color.fill.accentSubtle` | Accent backgrounds | Selected states, notifications |
-| `color.fill.success` | Success indicators | Checkmarks, completed states |
-| `color.fill.successSubtle` | Success backgrounds | Success banners |
-| `color.fill.warning` | Warning indicators | Warning icons |
-| `color.fill.warningSubtle` | Warning backgrounds | Warning banners |
-| `color.fill.destructive` | Delete buttons, errors | Destructive actions |
-| `color.fill.destructiveSubtle` | Error backgrounds | Error banners |
-| `color.fill.disabled` | Disabled elements | Disabled buttons/inputs |
+### 4.3 Fill Colors
 
-### Border Colors
+| Token | Use Case | Examples |
+| :--- | :--- | :--- |
+| `var(--color-fill-primary)`   | Key Actions | Primary CTA buttons |
+| `var(--color-fill-secondary)` | Supporting Actions | Secondary buttons, tag backgrounds |
+| `var(--color-fill-accent)`    | Brand Emphasis | Icons, progress bars, highlights |
+| `var(--color-fill-tertiary)`  | Subtle Fills | Hover states, muted badges |
+| `var(--color-fill-error)`     | Destructive | Delete buttons, error indicators |
 
-| Use Case | Token | When to Use |
-|----------|-------|-------------|
-| `color.border.subtle` | Dividers, separators | Light visual separation |
-| `color.border.default` | Input borders, cards | Standard component borders |
-| `color.border.strong` | Emphasized borders | Active tabs, selected items |
-| `color.border.focus` | Focus rings | Keyboard focus indicators |
-| `color.border.error` | Error state borders | Invalid form fields |
-| `color.border.disabled` | Disabled borders | Disabled inputs |
+### 4.4 Border Colors
 
-### Interactive Colors
+| Token | Use Case |
+| :--- | :--- |
+| `var(--color-border-subtle)`  | Dividers and separators |
+| `var(--color-border-default)` | Standard component borders (inputs, cards) |
+| `var(--color-border-strong)`  | Emphasized borders (active states) |
+| `var(--color-border-focus)`   | Focus rings for accessibility |
 
-For buttons and interactive elements, use the state-based tokens:
+---
+
+## 5. Interactive States
+
+Every interactive element must define styles for all states:
 
 ```css
 .button-primary {
@@ -96,247 +137,117 @@ For buttons and interactive elements, use the state-based tokens:
 .button-primary:active {
   background: var(--color-interactive-primary-active);
 }
-```
-
-Available variants: `primary`, `secondary`, `destructive`
-
----
-
-## Typography Selection Guide
-
-| Style | Use Case |
-|-------|----------|
-| `typography.largeTitle` | Hero headings, splash screens |
-| `typography.title1` | Page titles |
-| `typography.title2` | Section headings |
-| `typography.title3` | Card titles, subsections |
-| `typography.headline` | List item titles, emphasized labels |
-| `typography.body` | Default body text |
-| `typography.bodyEmphasized` | Bold body text, key information |
-| `typography.callout` | Callout boxes, featured text |
-| `typography.subheadline` | Subtitles, secondary headings |
-| `typography.footnote` | Fine print, disclaimers |
-| `typography.caption1` | Image captions, timestamps |
-| `typography.caption2` | Smallest text, badges |
-
----
-
-## Elevation Selection Guide
-
-| Token | Use Case | Examples |
-|-------|----------|----------|
-| `elevation.flat` | Inline elements | Text, inline badges |
-| `elevation.raised` | Subtle lift | Cards, buttons |
-| `elevation.floating` | Floating UI | Dropdowns, tooltips, FABs |
-| `elevation.modal` | Top-level overlays | Modals, dialogs, drawers |
-
----
-
-## Spacing Guidelines
-
-### Component Spacing
-
-- `spacing.component.button.paddingX/Y` — Button internal padding
-- `spacing.component.input.paddingX/Y` — Input field padding
-- `spacing.component.card.padding` — Card internal padding
-- `spacing.component.card.gap` — Gap between card children
-
-### Layout Spacing
-
-- `spacing.layout.gutter` — Grid gutters (16px)
-- `spacing.layout.sectionGap` — Between page sections (48px)
-- `spacing.layout.pageMargin` — Page edge margins (16px)
-- `spacing.layout.contentMaxWidth` — Max content width (1200px)
-
-### Spacing Scale Reference
-
-```
-spacing.1  = 4px   (tight)
-spacing.2  = 8px   (compact)
-spacing.3  = 12px  (snug)
-spacing.4  = 16px  (default)
-spacing.6  = 24px  (relaxed)
-spacing.8  = 32px  (loose)
-spacing.12 = 48px  (section)
-spacing.16 = 64px  (large section)
+.button-primary:focus {
+  outline: 2px solid var(--color-border-focus);
+}
 ```
 
 ---
 
-## Border Radius Guidelines
+## 6. Typography
 
-| Token | Use Case |
-|-------|----------|
-| `radius.component.button` | Buttons (12px) |
-| `radius.component.input` | Form inputs (8px) |
-| `radius.component.card` | Cards (16px) |
-| `radius.component.modal` | Modals/dialogs (20px) |
-| `radius.component.badge` | Badges/pills (full) |
-| `radius.component.avatar` | Avatars (full) |
-| `radius.component.tooltip` | Tooltips (8px) |
-
----
-
-## Light/Dark Mode Implementation
-
-The design tokens CSS file includes both `@media (prefers-color-scheme: dark)` for automatic system preference detection and a `.dark` class for manual toggle control.
-
-### Usage
-
-Simply import the CSS file and tokens will automatically adapt to system preferences:
-
-```css
-@import 'app.css';
-```
-
-### Manual Dark Mode Toggle (Svelte)
-
-```svelte
-<script>
-  import { browser } from '$app/environment';
-
-  let darkMode = $state(false);
-
-  $effect(() => {
-    if (browser) {
-      darkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    }
-  });
-</script>
-
-<svelte:body class:dark={darkMode} />
-```
-
-Or apply the `.dark` class to your root element for manual control.
+| Role | Token Usage |
+| :--- | :--- |
+| **Splash/Hero** | `typography.largeTitle` |
+| **Page Title** | `typography.title1` |
+| **Section Header** | `typography.title2` |
+| **Sub-header** | `typography.title3` |
+| **Labels** | `typography.headline` |
+| **Body Text** | `typography.body` |
+| **Fine Print** | `typography.footnote` |
 
 ---
 
-## Z-Index Layering
+## 7. Elevation & Depth
 
-Always use z-index tokens to maintain consistent layering:
-
-```
-zIndex.base     = 0    (default flow)
-zIndex.dropdown = 100  (dropdowns, selects)
-zIndex.sticky   = 200  (sticky headers)
-zIndex.overlay  = 300  (overlays, backdrops)
-zIndex.modal    = 400  (modals, dialogs)
-zIndex.popover  = 500  (popovers on modals)
-zIndex.toast    = 600  (toast notifications)
-zIndex.tooltip  = 700  (tooltips, highest)
-```
+| Level | Token | Effect Usage |
+| :--- | :--- | :--- |
+| **Flat** | `elevation.flat` | Non-interactive items |
+| **Raised** | `elevation.raised` | Standard buttons and cards |
+| **Floating** | `elevation.floating` | Menus and tooltips |
+| **Modal** | `elevation.modal` | Centered dialogs and sheets |
 
 ---
 
-## Motion/Animation Guidelines
+## 8. Spacing System
 
-### Duration
+> [!TIP]
+> All spacing follows a strict **4-point grid**. Avoid odd values (e.g., 7px, 13px).
 
-- `motion.duration.instant` (0ms) — No animation
-- `motion.duration.fast` (100ms) — Micro-interactions, hovers
-- `motion.duration.normal` (200ms) — Default transitions
-- `motion.duration.slow` (300ms) — Larger state changes
-- `motion.duration.slower` (400ms) — Complex animations
-
-### Easing
-
-- `motion.easing.default` — Standard transitions
-- `motion.easing.easeIn` — Elements exiting
-- `motion.easing.easeOut` — Elements entering
-- `motion.easing.easeInOut` — Elements moving
-- `motion.easing.spring` — Playful/bouncy effects
+| Token | Value | Intent |
+| :--- | :--- | :--- |
+| `spacing.1` | 4px | Tight micro-spacing |
+| `spacing.2` | 8px | Compact internal padding |
+| `spacing.4` | 16px | **Default** component spacing |
+| `spacing.6` | 24px | Relaxed layout gaps |
+| `spacing.12`| 48px | Section vertical spacing |
 
 ---
 
-## Common Component Patterns
+## 9. Border Radius
+
+| Component | Token |
+| :--- | :--- |
+| **Buttons** | `radius.component.button` |
+| **Inputs** | `radius.component.input` |
+| **Cards** | `radius.component.card` |
+| **Modals** | `radius.component.modal` |
+| **Avatars** | `radius.component.avatar` (Circle) |
+
+---
+
+## 10. Z-Index Layers
+
+| Layer | Value | Purpose |
+| :--- | :--- | :--- |
+| `base` | 0 | Standard layout |
+| `sticky` | 200 | Navigation bars |
+| `modal` | 400 | Overlay dialogs |
+| `tooltip`| 700 | Highest priority labels |
+
+---
+
+## 11. Motion & Animation
+
+- **Purpose:** Guides attention, never purely decorative.
+- **Timing:** Use `motion.duration.fast` (120ms) for hovers and `motion.duration.default` (220ms) for transitions.
+- **Curves:** Prefer `motion.easing.standard` (Cubic Bezier). No bounce or playful easing.
+
+---
+
+## 12. Common Patterns
 
 ### Primary Button
-
 ```css
 .btn-primary {
-  background: var(--color-interactive-primary-default);
+  background: var(--color-fill-primary);
   color: var(--color-text-inverse);
-  padding: var(--spacing-component-button-paddingY) var(--spacing-component-button-paddingX);
   border-radius: var(--radius-component-button);
+  min-height: var(--tap-target-min);
+  padding: 0 var(--space-5);
   font: var(--typography-headline);
-  transition: background var(--motion-duration-fast) var(--motion-easing-default);
-}
-.btn-primary:hover {
-  background: var(--color-interactive-primary-hover);
-}
-.btn-primary:active {
-  background: var(--color-interactive-primary-active);
-}
-.btn-primary:disabled {
-  background: var(--color-fill-disabled);
-  color: var(--color-text-disabled);
+  transition: background var(--motion-duration-fast) var(--motion-easing-standard);
 }
 ```
 
-### Card
-
+### Content Card
 ```css
 .card {
   background: var(--color-surface-elevated);
-  border: var(--border-width-thin) solid var(--color-border-subtle);
+  border: 1px solid var(--color-border-subtle);
   border-radius: var(--radius-component-card);
-  padding: var(--spacing-component-card-padding);
+  padding: var(--spacing-6);
   box-shadow: var(--elevation-raised);
 }
 ```
 
-### Input Field
-
-```css
-.input {
-  background: var(--color-surface-background);
-  border: var(--border-width-default) solid var(--color-border-default);
-  border-radius: var(--radius-component-input);
-  padding: var(--spacing-component-input-paddingY) var(--spacing-component-input-paddingX);
-  color: var(--color-text-primary);
-  font: var(--typography-body);
-}
-.input:focus {
-  border-color: var(--color-border-focus);
-  outline: none;
-}
-.input::placeholder {
-  color: var(--color-text-tertiary);
-}
-.input:disabled {
-  background: var(--color-fill-disabled);
-  border-color: var(--color-border-disabled);
-  color: var(--color-text-disabled);
-}
-.input.error {
-  border-color: var(--color-border-error);
-}
-```
-
 ---
 
-## Decision Rules for AI Agents
+## 13. Decision Rules for AI
 
-1. **Text on backgrounds**: Use `text.primary` on `surface.background/primary/secondary`. Use `text.inverse` on `fill.primary` or `surface.inverse`.
-
-2. **Interactive elements**: Always include hover, active, focus, and disabled states.
-
-3. **Contrast**: Never use `fill.accent` or `fill.warning` for body text—only for icons or indicators.
-
-4. **Nesting surfaces**: `background` → `primary` → `secondary` → `elevated` (from outer to inner).
-
-5. **Destructive actions**: Use `interactive.destructive` for delete/remove buttons, `fill.destructive` for error states.
-
-6. **Elevation matches z-index**: `floating` elements should use `zIndex.dropdown` or higher.
-
-7. **Spacing rhythm**: Use the spacing scale consistently. Don't mix arbitrary pixel values.
-
-8. **Typography hierarchy**: Only one `largeTitle` or `title1` per view. Use `body` for most content.
-
----
-
-## File Reference
-
-- **Token source**: `app.css`
-- **Format**: CSS Custom Properties (CSS Variables)
-- **Dark mode**: Automatic via `prefers-color-scheme` or manual via `.dark` class
+1. **Hierarchy:** One `largeTitle` or `title1` per view. Use `body` for 90% of content.
+2. **Surfaces:** Nest surfaces in order: `background` → `primary` → `secondary` → `elevated`.
+3. **Colors:** Never use accent colors for body text. Neutrals are your friend.
+4. **Interaction:** Always include hover and active states for every clickable element.
+5. **Accessibility:** Ensure buttons have a minimum tap target of 44px.
+6. **Simplicity:** If choosing between a "cool" design and a "clear" design, always choose **clear**.

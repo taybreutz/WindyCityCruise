@@ -1,5 +1,5 @@
 <script lang="ts">
-	import Home_Hero from '$lib/components_home/Home_Hero.svelte';
+	import Home_Hero from '$lib/components_home/Hero.svelte';
 </script>
 
 <Home_Hero
@@ -24,32 +24,31 @@
 
 <style>
 	.content-section {
-		padding: var(--spacing-layout-section-gap) var(--spacing-layout-page-margin);
-		background-color: var(--color-surface-background);
+		padding: var(--space-10) var(--space-5);
+		background-color: var(--color-bg-primary);
 	}
 
 	.content-container {
-		max-width: var(--spacing-layout-content-max-width);
+		max-width: var(--content-narrow-width);
 		margin: 0 auto;
 		text-align: center;
 	}
 
 	.section-title {
-		font-size: var(--font-size-title1);
-		font-weight: var(--font-weight-title1);
-		line-height: var(--line-height-title1);
-		letter-spacing: var(--letter-spacing-title1);
+		font-family: var(--font-family-system);
+		font-size: var(--font-size-xl);
+		font-weight: var(--font-weight-semibold);
+		line-height: var(--line-height-tight);
 		color: var(--color-text-primary);
-		margin: 0 0 var(--spacing-4) 0;
+		margin: 0 0 var(--space-4) 0;
 	}
 
 	.section-text {
-		font-size: var(--font-size-body);
-		font-weight: var(--font-weight-body);
-		line-height: var(--line-height-body);
-		letter-spacing: var(--letter-spacing-body);
+		font-family: var(--font-family-system);
+		font-size: var(--font-size-md);
+		font-weight: var(--font-weight-regular);
+		line-height: var(--line-height-relaxed);
 		color: var(--color-text-secondary);
-		max-width: 700px;
-		margin: 0 auto;
+		margin: 0;
 	}
 </style>

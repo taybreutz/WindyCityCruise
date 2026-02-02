@@ -32,95 +32,103 @@
 		top: 0;
 		left: 0;
 		right: 0;
-		z-index: var(--z-index-sticky);
-		color: var(--color-text-primary);
-		background-color: var(--color-surface-elevated);
+		z-index: 200;
+		height: var(--nav-height);
+		background-color: var(--nav-bg);
+		backdrop-filter: var(--blur-glass);
+		-webkit-backdrop-filter: var(--blur-glass);
+		border-bottom: 1px solid transparent;
 		transition:
-			background-color var(--motion-duration-normal) var(--motion-easing-default),
-			box-shadow var(--motion-duration-normal) var(--motion-easing-default);
+			border-color var(--motion-duration-default) var(--motion-ease-standard),
+			box-shadow var(--motion-duration-default) var(--motion-ease-standard);
 	}
 
 	.navbar.scrolled {
-		box-shadow: var(--elevation-raised);
+		border-bottom-color: var(--nav-border);
+		box-shadow: var(--shadow-1);
 	}
 
 	.navbar-content {
-		max-width: var(--spacing-layout-content-max-width);
+		max-width: var(--content-max-width);
+		height: 100%;
 		margin: 0 auto;
-		padding: var(--spacing-4) var(--spacing-layout-page-margin);
+		padding: 0 var(--space-5);
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
-		gap: var(--spacing-6);
+		gap: var(--space-6);
 	}
 
 	.logo {
 		text-decoration: none;
 		color: var(--color-text-primary);
-		transition: color var(--motion-duration-fast) var(--motion-easing-default);
+		transition: opacity var(--motion-duration-fast) var(--motion-ease-standard);
 	}
 
-	.navbar.scrolled .logo {
-		color: var(--color-text-primary);
+	.logo:hover {
+		opacity: var(--state-hover-opacity);
 	}
 
 	.logo-text {
-		font-size: var(--font-size-headline);
-		font-weight: var(--font-weight-headline);
-		line-height: var(--line-height-headline);
-		letter-spacing: var(--letter-spacing-headline);
+		font-family: var(--font-family-system);
+		font-size: var(--font-size-md);
+		font-weight: var(--font-weight-semibold);
+		line-height: var(--line-height-tight);
 	}
 
 	.nav-links {
 		display: flex;
 		align-items: center;
-		gap: var(--spacing-6);
+		gap: var(--space-6);
 	}
 
 	.nav-link {
-		font-size: var(--font-size-body);
-		font-weight: var(--font-weight-body);
-		line-height: var(--line-height-body);
-		letter-spacing: var(--letter-spacing-body);
-		color: var(--color-text-primary);
-		text-decoration: none;
-		transition: color var(--motion-duration-fast) var(--motion-easing-default);
-	}
-
-	.navbar.scrolled .nav-link {
+		font-family: var(--font-family-system);
+		font-size: var(--font-size-sm);
+		font-weight: var(--font-weight-regular);
+		line-height: var(--line-height-default);
 		color: var(--color-text-secondary);
+		text-decoration: none;
+		transition:
+			color var(--motion-duration-fast) var(--motion-ease-standard),
+			opacity var(--motion-duration-fast) var(--motion-ease-standard);
 	}
 
 	.nav-link:hover {
-		color: var(--color-fill-accent);
+		color: var(--color-text-primary);
 		text-decoration: none;
+	}
+
+	.nav-link:active {
+		opacity: var(--state-pressed-opacity);
 	}
 
 	.book-button {
 		display: inline-flex;
 		align-items: center;
 		justify-content: center;
-		padding: var(--spacing-component-button-padding-y) var(--spacing-component-button-padding-x);
-		background-color: var(--color-interactive-primary-default);
-		color: var(--color-text-inverse);
-		font-size: var(--font-size-headline);
-		font-weight: var(--font-weight-headline);
-		line-height: var(--line-height-headline);
-		letter-spacing: var(--letter-spacing-headline);
+		height: var(--button-height);
+		padding: 0 var(--button-padding-x);
+		background-color: var(--button-primary-bg);
+		color: var(--button-primary-text);
+		font-family: var(--font-family-system);
+		font-size: var(--font-size-sm);
+		font-weight: var(--font-weight-medium);
+		line-height: var(--line-height-tight);
 		text-decoration: none;
-		border-radius: var(--radius-component-button);
+		border-radius: var(--radius-sm);
 		transition:
-			background-color var(--motion-duration-fast) var(--motion-easing-default),
-			transform var(--motion-duration-fast) var(--motion-easing-default);
+			opacity var(--motion-duration-fast) var(--motion-ease-standard),
+			transform var(--motion-duration-fast) var(--motion-ease-standard);
 	}
 
 	.book-button:hover {
-		background-color: var(--color-interactive-primary-hover);
+		opacity: var(--state-hover-opacity);
 		text-decoration: none;
 	}
 
 	.book-button:active {
-		background-color: var(--color-interactive-primary-active);
+		opacity: var(--state-pressed-opacity);
 		transform: scale(0.98);
 	}
 
@@ -130,7 +138,7 @@
 		}
 
 		.logo-text {
-			font-size: var(--font-size-subheadline);
+			font-size: var(--font-size-sm);
 		}
 	}
 </style>
