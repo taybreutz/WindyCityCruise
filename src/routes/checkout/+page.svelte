@@ -23,7 +23,8 @@
 	} | null>(null);
 
 	let tripDate = $state('');
-	let tripTime = $state('');
+	// Default values for time, duration, guests (will be configured in step 1b or step 2)
+	let tripTime = $state('2:00 PM');
 	let tripDuration = $state(4);
 	let tripGuests = $state(6);
 
@@ -77,18 +78,9 @@
 		});
 	}
 
-	function handleBoatSelected(
-		boat: typeof selectedBoat,
-		date: string,
-		time: string,
-		duration: number,
-		guests: number
-	) {
+	function handleBoatSelected(boat: typeof selectedBoat, date: string) {
 		selectedBoat = boat;
 		tripDate = date;
-		tripTime = time;
-		tripDuration = duration;
-		tripGuests = guests;
 		substep = 'review';
 		window.scrollTo({ top: 0, behavior: 'smooth' });
 	}
@@ -129,9 +121,6 @@
 					<BoatSelector
 						selectedBoatId={selectedBoat?.id || ''}
 						selectedDate={tripDate}
-						selectedTime={tripTime}
-						selectedDuration={tripDuration}
-						selectedGuests={tripGuests}
 						onContinue={handleBoatSelected}
 					/>
 				{:else if substep === 'review' && bookingData}

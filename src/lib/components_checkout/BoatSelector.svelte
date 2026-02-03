@@ -12,26 +12,13 @@
 	interface Props {
 		selectedBoatId: string;
 		selectedDate: string;
-		selectedTime: string;
-		selectedDuration: number;
-		selectedGuests: number;
-		onContinue: (boat: Boat, date: string, time: string, duration: number, guests: number) => void;
+		onContinue: (boat: Boat, date: string) => void;
 	}
 
-	let {
-		selectedBoatId,
-		selectedDate,
-		selectedTime,
-		selectedDuration,
-		selectedGuests,
-		onContinue
-	}: Props = $props();
+	let { selectedBoatId, selectedDate, onContinue }: Props = $props();
 
 	let currentBoatId = $state('');
 	let date = $state('');
-	let time = $state('');
-	let duration = $state(4);
-	let guests = $state(6);
 
 	// Sync props to local state when they change
 	$effect(() => {
@@ -39,15 +26,6 @@
 	});
 	$effect(() => {
 		if (selectedDate) date = selectedDate;
-	});
-	$effect(() => {
-		if (selectedTime) time = selectedTime;
-	});
-	$effect(() => {
-		if (selectedDuration) duration = selectedDuration;
-	});
-	$effect(() => {
-		if (selectedGuests) guests = selectedGuests;
 	});
 
 	const boats: Boat[] = [
@@ -110,27 +88,12 @@
 		}
 	];
 
-	const timeSlots = [
-		'9:00 AM',
-		'10:00 AM',
-		'11:00 AM',
-		'12:00 PM',
-		'1:00 PM',
-		'2:00 PM',
-		'3:00 PM',
-		'4:00 PM',
-		'5:00 PM',
-		'6:00 PM'
-	];
-
-	const durations = [2, 3, 4, 5, 6, 8];
-
 	const selectedBoat = $derived(boats.find((b) => b.id === currentBoatId));
-	const canContinue = $derived(currentBoatId && date && time && duration && guests);
+	const canContinue = $derived(currentBoatId && date);
 
 	function handleContinue() {
 		if (selectedBoat && canContinue) {
-			onContinue(selectedBoat, date, time, duration, guests);
+			onContinue(selectedBoat, date);
 		}
 	}
 
@@ -170,55 +133,6 @@
 				min={new Date().toISOString().split('T')[0]}
 			/>
 		</div>
-
-		<!-- <div class="config-group">
-			<label for="trip-time" class="config-label">
-				<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-					<circle cx="12" cy="12" r="10" />
-					<polyline points="12 6 12 12 16 14" />
-				</svg>
-				Departure Time
-			</label>
-			<select id="trip-time" class="config-input" bind:value={time}>
-				<option value="">Select time</option>
-				{#each timeSlots as slot}
-					<option value={slot}>{slot}</option>
-				{/each}
-			</select>
-		</div>
-
-		<div class="config-group">
-			<label for="trip-duration" class="config-label">
-				<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-					<path
-						d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"
-					/>
-				</svg>
-				Duration
-			</label>
-			<select id="trip-duration" class="config-input" bind:value={duration}>
-				{#each durations as d}
-					<option value={d}>{d} hours</option>
-				{/each}
-			</select>
-		</div>
-
-		<div class="config-group">
-			<label for="trip-guests" class="config-label">
-				<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-					<path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" />
-					<circle cx="9" cy="7" r="4" />
-					<path d="M23 21v-2a4 4 0 00-3-3.87" />
-					<path d="M16 3.13a4 4 0 010 7.75" />
-				</svg>
-				Guests
-			</label>
-			<select id="trip-guests" class="config-input" bind:value={guests}>
-				{#each Array.from({ length: selectedBoat?.capacity || 12 }, (_, i) => i + 1) as g}
-					<option value={g}>{g} {g === 1 ? 'guest' : 'guests'}</option>
-				{/each}
-			</select>
-		</div> -->
 	</div>
 </div>
 
@@ -255,19 +169,17 @@
 		{/each}
 	</div>
 
-	{#if selectedBoat && date && time}
+	{#if selectedBoat && date}
 		<div class="selection-summary">
 			<div class="summary-content">
 				<img src={selectedBoat.image} alt={selectedBoat.name} class="summary-image" />
 				<div class="summary-details">
 					<h4 class="summary-boat">{selectedBoat.name}</h4>
-					<p class="summary-trip">
-						{formatDate(date)} at {time} · {duration} hours · {guests} guests
-					</p>
+					<p class="summary-trip">{formatDate(date)}</p>
 				</div>
 				<div class="summary-price">
-					<span class="price-total">${(selectedBoat.rate * duration).toFixed(0)}</span>
-					<span class="price-note">+ captain & fees</span>
+					<span class="price-total">From ${selectedBoat.rate}</span>
+					<span class="price-note">/hour</span>
 				</div>
 			</div>
 		</div>
