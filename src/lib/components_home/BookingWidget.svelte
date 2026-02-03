@@ -75,7 +75,7 @@
 	</div>
 
 	<div class="form-content">
-		<div class="input-group location">
+		<!-- <div class="input-group location">
 			<svg
 				class="input-icon"
 				viewBox="0 0 24 24"
@@ -97,7 +97,7 @@
 					readonly
 				/>
 			</div>
-		</div>
+		</div> -->
 
 		<div class="input-group date">
 			<svg

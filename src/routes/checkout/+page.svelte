@@ -1,4 +1,34 @@
 <script lang="ts">
+	//
+	//
+	//
+	//
+	//
+	//
+	//
+	//
+	//
+	//
+	//
+	//
+
+	// step 1 should be select date or boat
+	// Step 2 is all of the information and attractive display
+	// step 3 is payment and confirmation!
+
+	//
+	//
+	//
+	//
+	//
+	//
+	//
+	//
+	//
+	//
+	//
+	//
+
 	import { page } from '$app/stores';
 	import ProgressIndicator from '$lib/components_checkout/ProgressIndicator.svelte';
 	import BookingSummary from '$lib/components_checkout/BookingSummary.svelte';
@@ -8,10 +38,11 @@
 	import BookingConfirmation from '$lib/components_checkout/BookingConfirmation.svelte';
 
 	// Step management: 1a = select boat, 1b = review details, 2 = guest/payment, 3 = confirmation
-	let substep = $state<'select' | 'review'>('select');
+	// TEMP: Starting on 'review' with pre-selected data for team review
+	let substep = $state<'select' | 'review'>('review');
 	let currentStep = $state(1);
 
-	// Booking state
+	// Booking state - TEMP: pre-populated for team review
 	let selectedBoat = $state<{
 		id: string;
 		name: string;
@@ -20,13 +51,22 @@
 		capacity: number;
 		rate: number;
 		tier: string;
-	} | null>(null);
+	} | null>({
+		id: '46-sea-ray',
+		name: "46' Sea Ray Express",
+		type: 'Premium Yacht',
+		image:
+			'https://chicagoboatinghub.com/cdn/shop/files/1_e454cb2e-4054-48a2-b88c-a05bfd3b530a.jpg?v=1709601158&width=3840',
+		capacity: 15,
+		rate: 325,
+		tier: 'Premium'
+	});
 
-	let tripDate = $state('');
-	// Default values for time, duration, guests (will be configured in step 1b or step 2)
+	let tripDate = $state('2026-02-15');
+	// Default values for time, duration, guests
 	let tripTime = $state('2:00 PM');
 	let tripDuration = $state(4);
-	let tripGuests = $state(6);
+	let tripGuests = $state(8);
 
 	// Computed booking data for components
 	const bookingData = $derived(

@@ -39,8 +39,8 @@
 			preload="auto"
 			class="hero-video"
 		></video>
+		<BookingWidget class="hero-booking-widget" />
 	</div>
-	<BookingWidget class="hero-booking-widget" />
 </section>
 
 <style>
@@ -60,9 +60,11 @@
 
 	.hero :global(.hero-booking-widget) {
 		position: absolute;
-		bottom: 20%;
-		right: -10%;
+		bottom: -80px;
 		z-index: 10;
+		max-width: 90%;
+		left: 5%;
+		right: 5%;
 	}
 
 	.hero-media {
@@ -70,11 +72,12 @@
 		height: 100%;
 		min-height: 400px;
 		border-radius: var(--radius-lg);
-		overflow: hidden;
+		overflow: visible;
 		animation: fadeIn var(--motion-duration-slow) var(--motion-ease-emphasized);
 	}
 
 	.hero-video {
+		border-radius: var(--radius-lg);
 		width: 100%;
 		height: 100%;
 		object-fit: cover;
