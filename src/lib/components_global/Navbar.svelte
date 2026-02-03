@@ -18,12 +18,13 @@
 		</a>
 
 		<div class="nav-links">
-			<a href="/boats" class="nav-link">Boats</a>
-			<a href="/experiences" class="nav-link">Experiences</a>
+			<a href="/rentals" class="nav-link">Rentals</a>
+			<a href="/boat-club" class="nav-link">Boat Club</a>
+			<a href="/luxury" class="nav-link">Luxury</a>
 			<a href="/about" class="nav-link">About</a>
 		</div>
 
-		<a href="/book" class="book-button">Book Now</a>
+		<a href="/rentals" class="book-button">Book Now</a>
 	</div>
 </nav>
 
@@ -34,10 +35,9 @@
 		right: 0;
 		z-index: 200;
 		height: var(--nav-height);
-		background-color: var(--nav-bg);
 		backdrop-filter: var(--blur-glass);
 		-webkit-backdrop-filter: var(--blur-glass);
-		border-bottom: 1px solid transparent;
+		border-bottom: 1px solid var(--nav-border);
 		transition:
 			border-color var(--motion-duration-default) var(--motion-ease-standard),
 			box-shadow var(--motion-duration-default) var(--motion-ease-standard);

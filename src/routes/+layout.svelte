@@ -1,7 +1,8 @@
 <script lang="ts">
 	import '../app.css';
 	import favicon from '$lib/assets/favicon.svg';
-	import Navbar from '$lib/components_home/Navbar.svelte';
+	import Navbar from '$lib/components_global/Navbar.svelte';
+	import Footer from '$lib/components_global/Footer.svelte';
 
 	let { children } = $props();
 </script>
@@ -11,4 +12,7 @@
 </svelte:head>
 
 <Navbar />
-{@render children()}
+<main>
+	{@render children()}
+</main>
+<Footer />

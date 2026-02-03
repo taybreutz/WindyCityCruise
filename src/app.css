@@ -9,6 +9,87 @@
 */
 
 /* =========================================================
+   CSS Reset
+   ========================================================= */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-size-adjust: 100%;
+}
+
+body {
+  min-height: 100vh;
+  line-height: var(--line-height-default, 1.45);
+  font-family: var(--font-family-system, -apple-system, BlinkMacSystemFont, sans-serif);
+  background: var(--color-bg-primary, #f8f9fa);
+  color: var(--color-text-primary, #0a2540);
+}
+
+img,
+picture,
+video,
+canvas,
+svg {
+  display: block;
+  max-width: 100%;
+}
+
+input,
+button,
+textarea,
+select {
+  font: inherit;
+  color: inherit;
+}
+
+button {
+  cursor: pointer;
+  background: none;
+  border: none;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+ul,
+ol {
+  list-style: none;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-size: inherit;
+  font-weight: inherit;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* =========================================================
    2. Color System (Light Mode Only)
    ========================================================= */
 :root {
@@ -211,4 +292,22 @@
 
   /* Reduced Motion */
   --reduced-motion-duration: 1ms;
+}
+
+/* =========================================================
+   9. Semantic Aliases
+   ========================================================= */
+:root {
+  /* Surface shortcuts */
+  --color-surface: var(--color-bg-primary);
+  --color-surface-elevated: var(--color-bg-secondary);
+
+  /* Primary accent shortcut */
+  --color-primary: var(--color-accent-primary);
+
+  /* Border shortcut */
+  --color-border: var(--color-border-default);
+
+  /* Font size alias */
+  --font-size-base: var(--font-size-md);
 }

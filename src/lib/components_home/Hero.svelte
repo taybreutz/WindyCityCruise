@@ -1,4 +1,6 @@
 <script lang="ts">
+	import BookingWidget from './BookingWidget.svelte';
+
 	interface Props {
 		title?: string;
 		subtitle?: string;
@@ -38,6 +40,7 @@
 			class="hero-video"
 		></video>
 	</div>
+	<BookingWidget class="hero-booking-widget" />
 </section>
 
 <style>
@@ -51,7 +54,15 @@
 		gap: var(--space-8);
 		margin: 0 auto;
 		padding: var(--space-8) var(--space-5);
-		overflow: hidden;
+		padding-bottom: calc(var(--space-8) + 80px);
+		overflow: visible;
+	}
+
+	.hero :global(.hero-booking-widget) {
+		position: absolute;
+		bottom: 20%;
+		right: -10%;
+		z-index: 10;
 	}
 
 	.hero-media {
@@ -154,17 +165,19 @@
 		.hero {
 			grid-template-columns: 1fr;
 			min-height: auto;
+			height: auto;
 			padding: var(--space-6) var(--space-4);
+			padding-bottom: var(--space-6);
 		}
 
 		.hero-content {
 			align-items: center;
 			text-align: center;
-			order: 1;
+			order: 2;
 		}
 
 		.hero-media {
-			order: 2;
+			order: 1;
 			min-height: 300px;
 		}
 
@@ -174,6 +187,14 @@
 
 		.hero-cta-container {
 			justify-content: center;
+		}
+
+		.hero :global(.hero-booking-widget) {
+			position: relative;
+			bottom: auto;
+			right: auto;
+			order: 3;
+			margin-top: var(--space-5);
 		}
 	}
 
