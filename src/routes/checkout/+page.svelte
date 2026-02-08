@@ -11,7 +11,6 @@
 	//
 	//
 	//
-
 	// step 1 should be select date or boat
 	// Step 2 is all of the information and attractive display
 	// step 3 is payment and confirmation!
