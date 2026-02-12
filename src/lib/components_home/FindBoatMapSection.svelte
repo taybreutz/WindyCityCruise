@@ -1,11 +1,11 @@
 <script lang="ts">
+	import { goto } from '$app/navigation';
 	import { env } from '$env/dynamic/public';
+	import { BOAT_POPUP_IMAGE, boatLocations, type BoatLocation } from '$lib/data/boats';
 	import { onMount } from 'svelte';
 	import BookingWidget from './BookingWidget.svelte';
 
 	const mapboxToken = env.PUBLIC_MAPBOX_TOKEN;
-	const boatPopupImage =
-		'https://res.cloudinary.com/dlobqp00u/image/upload/w_2560,q_auto,f_auto/v1770920545/chicago-boat-rental-56ft-sea-ray-sundancer-chicago-skyline.png';
 
 	interface PointOfInterest {
 		name: string;
@@ -14,44 +14,6 @@
 		description?: string;
 		bookHref?: string;
 	}
-
-	const boatLocations: PointOfInterest[] = [
-		{
-			name: "33' Rinker Fiesta Vee",
-			lng: -87.6097,
-			lat: 41.8922,
-			description: 'Burnham Harbor Pickup',
-			bookHref: '/rentals'
-		},
-		{
-			name: "37' Sea Ray Sundancer",
-			lng: -87.6074,
-			lat: 41.8872,
-			description: 'Monroe Harbor Pickup',
-			bookHref: '/rentals'
-		},
-		{
-			name: "46' Sea Ray Express",
-			lng: -87.6162,
-			lat: 41.8988,
-			description: 'Navy Pier Pickup',
-			bookHref: '/rentals'
-		},
-		{
-			name: "55' Sea Ray Sundancer",
-			lng: -87.6354,
-			lat: 41.8784,
-			description: 'Chicago River Pickup',
-			bookHref: '/rentals'
-		},
-		{
-			name: "70' Sea Ray Sun Sport",
-			lng: -87.6028,
-			lat: 41.8713,
-			description: '31st Street Harbor Pickup',
-			bookHref: '/rentals'
-		}
-	];
 
 	let stayAddress = $state('River North, Chicago, IL');
 	let stayPoint = $state<PointOfInterest>({
@@ -80,14 +42,14 @@
 			.replaceAll("'", '&#039;');
 	}
 
-	function getBoatPopupHtml(boat: PointOfInterest) {
+	function getBoatPopupHtml(boat: BoatLocation) {
 		const boatName = escapeHtml(boat.name);
 		const boatDescription = escapeHtml(boat.description ?? 'Chicago Pickup');
 		const bookHref = boat.bookHref ?? '/rentals';
 
 		return `
 			<div class="boat-popup-card">
-				<img src="${boatPopupImage}" alt="${boatName}" class="boat-popup-image" />
+				<img src="${BOAT_POPUP_IMAGE}" alt="${boatName}" class="boat-popup-image" />
 				<div class="boat-popup-body">
 					<p class="boat-popup-title">${boatName}</p>
 					<p class="boat-popup-description">${boatDescription}</p>
@@ -249,6 +211,19 @@
 		}
 	}
 
+	function handleWidgetSearch(payload: { date: string; guests: string; category: string }) {
+		const params = new URLSearchParams({
+			date: payload.date,
+			guests: payload.guests,
+			category: payload.category,
+			stay: stayPoint.name,
+			lat: String(stayPoint.lat),
+			lng: String(stayPoint.lng)
+		});
+
+		goto(`/find-your-boat?${params.toString()}`);
+	}
+
 	onMount(() => {
 		let isDestroyed = false;
 
@@ -361,7 +336,7 @@
 				<span><i class="dot dot-boat"></i>Boat locations</span>
 			</div>
 
-			<BookingWidget class="map-booking-widget" />
+			<BookingWidget class="map-booking-widget" onSearch={handleWidgetSearch} />
 		</div>
 	</div>
 </section>

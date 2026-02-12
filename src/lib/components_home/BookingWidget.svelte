@@ -1,13 +1,35 @@
 <script lang="ts">
-	interface Props {
-		class?: string;
+	interface SearchPayload {
+		date: string;
+		guests: string;
+		category: string;
 	}
 
-	let { class: className = '' }: Props = $props();
+	interface Props {
+		class?: string;
+		onSearch?: (payload: SearchPayload) => void;
+	}
+
+	let { class: className = '', onSearch }: Props = $props();
 
 	let activeTab = $state('yachts');
 	let date = $state('');
 	let guests = $state('2');
+	let formError = $state('');
+
+	function handleSearch() {
+		if (!date) {
+			formError = 'Select a date to continue.';
+			return;
+		}
+
+		formError = '';
+		onSearch?.({
+			date,
+			guests,
+			category: activeTab
+		});
+	}
 </script>
 
 <div class="booking-widget {className}">
@@ -139,8 +161,11 @@
 			</div>
 		</div>
 
-		<button class="search-btn"> Find Your Boat </button>
+		<button class="search-btn" type="button" onclick={handleSearch}> Find Your Boat </button>
 	</div>
+	{#if formError}
+		<p class="form-error">{formError}</p>
+	{/if}
 </div>
 
 <style>
@@ -286,6 +311,14 @@
 
 	.search-btn:active {
 		transform: scale(0.98);
+	}
+
+	.form-error {
+		margin: var(--space-2) 0 0;
+		font-family: var(--font-family-system);
+		font-size: 12px;
+		font-weight: var(--font-weight-medium);
+		color: #b42318;
 	}
 
 	@media (max-width: 768px) {
