@@ -1,5 +1,6 @@
 <script lang="ts">
 	import Home_Hero from '$lib/components_home/Hero.svelte';
+	import FindBoatMapSection from '$lib/components_home/FindBoatMapSection.svelte';
 
 	const experiences = [
 		{
@@ -232,6 +233,8 @@
 	ctaText2="Memberships"
 	ctaHref2="/boat-club"
 />
+
+<FindBoatMapSection />
 
 <!-- Boating Experiences -->
 <section class="section">
