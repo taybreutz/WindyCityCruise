@@ -47,7 +47,9 @@
 	let checkOutDate = $state('');
 	let guests = $state('2');
 	let aiPrompt = $state('');
-	let liveLookupState = $state<'idle' | 'searching' | 'ready' | 'outside' | 'not_found' | 'error'>('idle');
+	let liveLookupState = $state<
+		'idle' | 'searching' | 'ready' | 'outside_chicago' | 'not_found' | 'error'
+	>('idle');
 	let liveLookupMessage = $state('');
 	let liveLookupPoint = $state<PointOfInterest | null>(null);
 	let liveLookupQuery = $state('');
@@ -230,7 +232,7 @@
 	async function resolveStayPoint() {
 		const query = stayAddress.trim();
 		if (!query) {
-			addressError = 'Enter a city, hotel, airport, address or landmark.';
+			addressError = 'Enter a Chicago neighborhood, hotel, or address.';
 			return false;
 		}
 
@@ -278,13 +280,33 @@
 		const query = stayAddress.trim();
 		const normalizedQuery = query.toLowerCase();
 
-		if (plannerMode !== 'manual' || !mapboxToken || query.length < 3) {
-			if (query.length < 3) {
-				liveLookupState = 'idle';
-				liveLookupMessage = '';
-				liveLookupPoint = null;
-				liveLookupQuery = '';
-			}
+		if (plannerMode !== 'manual') {
+			liveLookupState = 'idle';
+			liveLookupMessage = '';
+			liveLookupPoint = null;
+			liveLookupQuery = '';
+			return;
+		}
+
+		if (query.length < 3) {
+			liveLookupState = 'idle';
+			liveLookupMessage = '';
+			liveLookupPoint = null;
+			liveLookupQuery = '';
+			return;
+		}
+
+		if (!mapboxToken) {
+			liveLookupState = 'error';
+			liveLookupMessage = 'Live Chicago validation is unavailable right now.';
+			liveLookupPoint = null;
+			liveLookupQuery = '';
+			return;
+		}
+
+		if (liveLookupPoint && liveLookupQuery === normalizedQuery) {
+			liveLookupState = 'ready';
+			liveLookupMessage = `Ready: ${liveLookupPoint.name}`;
 			return;
 		}
 
@@ -318,7 +340,7 @@
 				liveLookupPoint = null;
 				liveLookupQuery = '';
 				if (result.reason === 'outside_chicago') {
-					liveLookupState = 'outside';
+					liveLookupState = 'outside_chicago';
 					liveLookupMessage = 'Only Chicago addresses are supported.';
 					return;
 				}
@@ -598,7 +620,7 @@
 						id="stay-address"
 						type="text"
 						class="planner-location-input"
-						placeholder="Enter a Chicago Address"
+						placeholder="Enter a Chicago neighborhood, hotel, or address"
 						bind:value={stayAddress}
 					/>
 
@@ -639,6 +661,18 @@
 						</svg>
 					</button>
 				</form>
+
+				{#if liveLookupState !== 'idle' && !addressError && !plannerError}
+					<p
+						class="planner-live-hint"
+						class:ready={liveLookupState === 'ready'}
+						class:warning={liveLookupState === 'outside_chicago' || liveLookupState === 'not_found'}
+						class:error={liveLookupState === 'error'}
+						aria-live="polite"
+					>
+						{liveLookupMessage}
+					</p>
+				{/if}
 			{:else}
 				<div class="planner-ai-card">
 					<div class="planner-ai-logo" aria-hidden="true">
@@ -997,6 +1031,26 @@
 
 	.planner-ai-back:hover {
 		opacity: var(--state-hover-opacity);
+	}
+
+	.planner-live-hint {
+		margin: var(--space-2) 0 0;
+		font-family: var(--font-family-system);
+		font-size: var(--font-size-xs);
+		font-weight: var(--font-weight-medium);
+		color: var(--color-text-secondary);
+	}
+
+	.planner-live-hint.ready {
+		color: var(--color-primary);
+	}
+
+	.planner-live-hint.warning {
+		color: var(--color-text-secondary);
+	}
+
+	.planner-live-hint.error {
+		color: var(--color-error);
 	}
 
 	.planner-error {
