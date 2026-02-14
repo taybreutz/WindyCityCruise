@@ -9,8 +9,8 @@
 	}
 
 	let {
-		title = 'Chicago Boat Rentals',
-		subtitle = 'The Best Boats, Yachts, and Experiences in Chicago all in one place.',
+		title = 'Chicago Boat Rentals & Luxury Yacht Charters',
+		subtitle = 'The all in one place for the best boats, yachts, and water experiences in Chicago.',
 		ctaText = 'Book Now',
 		ctaHref = '/book',
 		ctaText2 = 'Explore Boats',
@@ -91,7 +91,7 @@
 	.hero-title {
 		font-family: var(--font-family-system);
 		font-size: var(--font-size-2xl);
-		font-weight: var(--font-weight-semibold);
+		font-weight: 900;
 		line-height: var(--line-height-tight);
 		color: var(--color-text-primary);
 		margin: 0;

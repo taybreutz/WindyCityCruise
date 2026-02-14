@@ -80,6 +80,7 @@ h6 {
 }
 
 @media (prefers-reduced-motion: reduce) {
+
   *,
   *::before,
   *::after {
@@ -179,7 +180,7 @@ h6 {
   --space-10: 64px;
 
   /* Layout Constraints */
-  --content-max-width: 1120px;
+  --content-max-width: 1270px;
   --content-narrow-width: 720px;
 
   /* Safe Areas */

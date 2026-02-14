@@ -226,8 +226,8 @@
 </svelte:head>
 
 <Home_Hero
-	title="Chicago Boat Rentals"
-	subtitle="The Best Boats, Yachts, and Experiences in Chicago all in one place."
+	title="Chicago Boat Rentals & Luxury Yacht Charters"
+	subtitle="The all in one place for the best boats, yachts, and water experiences in Chicago."
 	ctaText="Book a Boat"
 	ctaHref="/rentals"
 	ctaText2="Memberships"

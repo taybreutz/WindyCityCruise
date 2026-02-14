@@ -14,7 +14,7 @@
 <nav class="navbar" class:scrolled>
 	<div class="navbar-content">
 		<a href="/" class="logo">
-			<span class="logo-text">Chicago Boating Hub</span>
+			<span class="logo-text">CHICAGO BOATING HUB</span>
 		</a>
 
 		<div class="nav-links">
@@ -24,12 +24,16 @@
 			<a href="/about" class="nav-link">About</a>
 		</div>
 
-		<a href="/rentals" class="book-button">Book Now</a>
+		<div class="buttons-container">
+			<a href="/rentals" class="book-button">Contact Sales</a>
+			<a href="/rentals" class="book-button">Book Now</a>
+		</div>
 	</div>
 </nav>
 
 <style>
 	.navbar {
+		margin-top: 1rem;
 		top: 0;
 		left: 0;
 		right: 0;
@@ -52,10 +56,9 @@
 		max-width: var(--content-max-width);
 		height: 100%;
 		margin: 0 auto;
-		padding: 0 var(--space-5);
+		padding: var(--space-3) var(--space-5);
 		display: flex;
 		align-items: center;
-		justify-content: space-between;
 		gap: var(--space-6);
 	}
 
@@ -72,7 +75,7 @@
 	.logo-text {
 		font-family: var(--font-family-system);
 		font-size: var(--font-size-md);
-		font-weight: var(--font-weight-semibold);
+		font-weight: 900;
 		line-height: var(--line-height-tight);
 	}
 
@@ -101,6 +104,13 @@
 
 	.nav-link:active {
 		opacity: var(--state-pressed-opacity);
+	}
+
+	.buttons-container {
+		margin-left: auto;
+		display: flex;
+		align-items: center;
+		gap: var(--space-2);
 	}
 
 	.book-button {

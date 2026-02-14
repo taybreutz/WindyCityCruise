@@ -2,7 +2,8 @@
 	const boatingOptions = [
 		{
 			title: 'Large Groups',
-			image: 'https://chicagoboatinghub.com/cdn/shop/files/Tailgate_The_Lake.jpg?v=1704772970&width=1420',
+			image:
+				'https://chicagoboatinghub.com/cdn/shop/files/Tailgate_The_Lake.jpg?v=1704772970&width=1420',
 			href: '/rentals/large-groups'
 		},
 		{
@@ -12,7 +13,8 @@
 		},
 		{
 			title: 'Wakesurfing',
-			image: 'https://chicagoboatinghub.com/cdn/shop/files/IMG_2870_524a6adb-7e61-44ec-b795-3076514dc0ba.jpg?v=1701575842&width=1420',
+			image:
+				'https://chicagoboatinghub.com/cdn/shop/files/IMG_2870_524a6adb-7e61-44ec-b795-3076514dc0ba.jpg?v=1701575842&width=1420',
 			href: '/wakesurfing'
 		}
 	];
@@ -34,13 +36,13 @@
 </script>
 
 <svelte:head>
-	<title>Chicago Boat Rentals & Charters - Chicago Boating Hub</title>
+	<title>Chicago Boat Rentals & Luxury Yacht Charters - Chicago Boating Hub</title>
 </svelte:head>
 
 <main class="page">
 	<section class="hero-section">
 		<div class="hero-content">
-			<h1 class="hero-title">Chicago Boat Rentals</h1>
+			<h1 class="hero-title">Chicago Boat Rentals & Luxury Yacht Charters</h1>
 			<div class="cta-group">
 				<a
 					href="https://fareharbor.com/embeds/book/knotmyboatcharters/?sheet-uuid=b525af1c-800e-4d14-a26b-6d45dacef65b&asn=theplaypenchicago&full-items=yes"
