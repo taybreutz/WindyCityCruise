@@ -6,9 +6,9 @@
 	let { currentStep = 1 }: Props = $props();
 
 	const steps = [
-		{ number: 1, label: 'Select Boat' },
-		{ number: 2, label: 'Guest & Payment' },
-		{ number: 3, label: 'Confirmation' }
+		{ number: 1, label: 'Select Experience' },
+		{ number: 2, label: 'Boat Details' },
+		{ number: 3, label: 'Guest & Payment' }
 	];
 </script>
 

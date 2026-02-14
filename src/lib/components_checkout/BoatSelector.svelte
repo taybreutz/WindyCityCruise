@@ -12,20 +12,16 @@
 	interface Props {
 		selectedBoatId: string;
 		selectedDate: string;
-		onContinue: (boat: Boat, date: string) => void;
+		onSelectByBoat: (boat: Boat) => void;
+		onSelectByDate: (boat: Boat, date: string, time: string) => void;
 	}
 
-	let { selectedBoatId, selectedDate, onContinue }: Props = $props();
+	let { selectedBoatId, selectedDate, onSelectByBoat, onSelectByDate }: Props = $props();
 
-	let currentBoatId = $state('');
 	let date = $state('');
 
-	// Sync props to local state when they change
 	$effect(() => {
-		if (selectedBoatId) currentBoatId = selectedBoatId;
-	});
-	$effect(() => {
-		if (selectedDate) date = selectedDate;
+		date = selectedDate ?? '';
 	});
 
 	const boats: Boat[] = [
@@ -88,119 +84,140 @@
 		}
 	];
 
-	const selectedBoat = $derived(boats.find((b) => b.id === currentBoatId));
-	const canContinue = $derived(currentBoatId && date);
+	const hasDate = $derived(Boolean(date));
+	const minDate = new Date().toISOString().split('T')[0];
+	const testTimeSlots = ['10AM', '2:45PM', '7:30PM'];
 
-	function handleContinue() {
-		if (selectedBoat && canContinue) {
-			onContinue(selectedBoat, date);
-		}
+	function getAvailableTimes(_boatId: string, dateValue: string): string[] {
+		if (!dateValue) return [];
+		return testTimeSlots;
 	}
 
-	function formatDate(dateStr: string): string {
-		if (!dateStr) return '';
-		const d = new Date(dateStr);
-		return d.toLocaleDateString('en-US', {
-			weekday: 'short',
+	function formatDate(dateValue: string): string {
+		if (!dateValue) return '';
+		const parsed = new Date(`${dateValue}T00:00:00`);
+		return parsed.toLocaleDateString('en-US', {
+			weekday: 'long',
 			month: 'short',
 			day: 'numeric',
 			year: 'numeric'
 		});
 	}
+
+	function clearDate() {
+		date = '';
+	}
 </script>
 
-<div class="trip-config">
-	<div class="section-header">
-		<h2 class="section-title">Search By Date</h2>
-	</div>
-
-	<div class="config-grid">
-		<div class="config-group">
-			<label for="trip-date" class="config-label">
-				<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-					<rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-					<line x1="16" y1="2" x2="16" y2="6" />
-					<line x1="8" y1="2" x2="8" y2="6" />
-					<line x1="3" y1="10" x2="21" y2="10" />
-				</svg>
-				Date
-			</label>
-			<input
-				type="date"
-				id="trip-date"
-				class="config-input"
-				bind:value={date}
-				min={new Date().toISOString().split('T')[0]}
-			/>
-		</div>
-	</div>
-</div>
-
-<div class="boat-selector">
-	<div class="section-header">
-		<h2 class="section-title">Select Your Boat</h2>
-		<p class="section-subtitle">Choose from our premium fleet of vessels</p>
-	</div>
-
-	<div class="boats-grid">
-		{#each boats as boat}
-			<button
-				class="boat-card"
-				class:selected={currentBoatId === boat.id}
-				onclick={() => (currentBoatId = boat.id)}
-			>
-				<div class="boat-image-container">
-					<img src={boat.image} alt={boat.name} class="boat-image" />
-					<span class="boat-tier">{boat.tier}</span>
-				</div>
-				<div class="boat-info">
-					<h3 class="boat-name">{boat.name}</h3>
-					<p class="boat-meta">{boat.type} · Up to {boat.capacity} guests</p>
-					<p class="boat-rate">${boat.rate}<span>/hour</span></p>
-				</div>
-				{#if currentBoatId === boat.id}
-					<div class="selected-badge">
-						<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
-							<polyline points="20 6 9 17 4 12" />
-						</svg>
-					</div>
-				{/if}
-			</button>
-		{/each}
-	</div>
-
-	{#if selectedBoat && date}
-		<div class="selection-summary">
-			<div class="summary-content">
-				<img src={selectedBoat.image} alt={selectedBoat.name} class="summary-image" />
-				<div class="summary-details">
-					<h4 class="summary-boat">{selectedBoat.name}</h4>
-					<p class="summary-trip">{formatDate(date)}</p>
-				</div>
-				<div class="summary-price">
-					<span class="price-total">From ${selectedBoat.rate}</span>
-					<span class="price-note">/hour</span>
-				</div>
+<div class="selector-layout">
+	<aside class="search-panel">
+		<div class="search-panel-inner">
+			<div class="section-header">
+				<h2 class="section-title">Search By Date</h2>
+				<p class="section-subtitle">Pick a date to view live time slots under each boat.</p>
 			</div>
-		</div>
-	{/if}
 
-	<button class="continue-button" disabled={!canContinue} onclick={handleContinue}>
-		Review Booking Details
-		<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-			<line x1="5" y1="12" x2="19" y2="12" />
-			<polyline points="12 5 19 12 12 19" />
-		</svg>
-	</button>
+			<div class="config-group">
+				<label for="trip-date" class="config-label">
+					<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+						<rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+						<line x1="16" y1="2" x2="16" y2="6" />
+						<line x1="8" y1="2" x2="8" y2="6" />
+						<line x1="3" y1="10" x2="21" y2="10" />
+					</svg>
+					Date
+				</label>
+				<input type="date" id="trip-date" class="config-input" bind:value={date} min={minDate} />
+			</div>
+
+			{#if hasDate}
+				<div class="date-chip">
+					<span>{formatDate(date)}</span>
+					<button type="button" class="clear-date" onclick={clearDate}>Clear</button>
+				</div>
+			{:else}
+				<p class="date-hint">
+					Skip date search to jump directly to step 2 by selecting a boat on the right.
+				</p>
+			{/if}
+		</div>
+	</aside>
+
+	<section class="boats-panel">
+		<div class="section-header">
+			<h2 class="section-title">Availability by Boat</h2>
+			<p class="section-subtitle">
+				{#if hasDate}
+					Select a time slot to continue to step 2.
+				{:else}
+					Select a boat to continue to step 2.
+				{/if}
+			</p>
+		</div>
+
+		<div class="boats-grid">
+			{#each boats as boat}
+				<article class="boat-card" class:selected={selectedBoatId === boat.id}>
+					<div class="boat-image-container">
+						<img src={boat.image} alt={boat.name} class="boat-image" />
+						<span class="boat-tier">{boat.tier}</span>
+					</div>
+
+					<div class="boat-info">
+						<div>
+							<h3 class="boat-name">{boat.name}</h3>
+							<p class="boat-meta">{boat.type} · Up to {boat.capacity} guests</p>
+						</div>
+						<p class="boat-rate">${boat.rate}<span>/hour</span></p>
+					</div>
+
+					{#if hasDate}
+						<div class="slots-section">
+							<p class="slots-label">Available Times</p>
+							<div class="slots-grid">
+								{#each getAvailableTimes(boat.id, date) as slot}
+									<button
+										type="button"
+										class="slot-button"
+										onclick={() => onSelectByDate(boat, date, slot)}
+									>
+										{slot}
+									</button>
+								{/each}
+							</div>
+						</div>
+					{:else}
+						<div class="boat-action">
+							<button type="button" class="select-boat-button" onclick={() => onSelectByBoat(boat)}>
+								Select Boat
+							</button>
+						</div>
+					{/if}
+				</article>
+			{/each}
+		</div>
+	</section>
 </div>
 
 <style>
-	.boat-selector {
-		background-color: var(--color-bg-primary);
+	.selector-layout {
+		display: grid;
+		grid-template-columns: 320px minmax(0, 1fr);
+		gap: var(--space-5);
+		align-items: start;
+	}
+
+	.search-panel-inner {
+		position: sticky;
+		top: var(--space-5);
+		background-color: var(--color-bg-secondary);
+		border: 1px solid var(--color-border-subtle);
+		border-radius: var(--radius-lg);
+		padding: var(--space-5);
 	}
 
 	.section-header {
-		margin-bottom: var(--space-5);
+		margin-bottom: var(--space-4);
 	}
 
 	.section-title {
@@ -218,134 +235,8 @@
 		margin: 0;
 	}
 
-	.boats-grid {
-		display: grid;
-		grid-template-columns: repeat(2, 1fr);
-		gap: var(--space-4);
-		margin-bottom: var(--space-6);
-	}
-
-	.boat-card {
-		position: relative;
-		display: flex;
-		flex-direction: column;
-		background-color: var(--color-bg-elevated);
-		border: 2px solid var(--color-border-subtle);
-		border-radius: var(--radius-lg);
-		overflow: hidden;
-		cursor: pointer;
-		text-align: left;
-		transition: all var(--motion-duration-fast) var(--motion-ease-standard);
-		max-width: 442px;
-	}
-
-	.boat-card:hover {
-		border-color: var(--color-border-default);
-		transform: translateY(-2px);
-		box-shadow: var(--shadow-2);
-	}
-
-	.boat-card.selected {
-		border-color: var(--color-accent-primary);
-		box-shadow: 0 0 0 3px var(--color-accent-muted);
-	}
-
-	.boat-image-container {
-		position: relative;
-		width: 100%;
-		height: 140px;
-		overflow: hidden;
-	}
-
-	.boat-image {
-		width: 100%;
-		height: 100%;
-		object-fit: cover;
-	}
-
-	.boat-tier {
-		position: absolute;
-		top: var(--space-2);
-		left: var(--space-2);
-		padding: var(--space-1) var(--space-2);
-		background-color: rgba(10, 37, 64, 0.8);
-		color: var(--color-text-inverse);
-		font-family: var(--font-family-system);
-		font-size: 10px;
-		font-weight: var(--font-weight-semibold);
-		text-transform: uppercase;
-		letter-spacing: 0.05em;
-		border-radius: var(--radius-sm);
-	}
-
-	.boat-info {
-		padding: var(--space-3);
-	}
-
-	.boat-name {
-		font-family: var(--font-family-system);
-		font-size: var(--font-size-sm);
-		font-weight: var(--font-weight-semibold);
-		color: var(--color-text-primary);
-		margin: 0 0 var(--space-1) 0;
-	}
-
-	.boat-meta {
-		font-family: var(--font-family-system);
-		font-size: var(--font-size-xs);
-		color: var(--color-text-tertiary);
-		margin: 0 0 var(--space-2) 0;
-	}
-
-	.boat-rate {
-		font-family: var(--font-family-system);
-		font-size: var(--font-size-md);
-		font-weight: var(--font-weight-semibold);
-		color: var(--color-accent-primary);
-		margin: 0;
-	}
-
-	.boat-rate span {
-		font-size: var(--font-size-xs);
-		font-weight: var(--font-weight-regular);
-		color: var(--color-text-tertiary);
-	}
-
-	.selected-badge {
-		position: absolute;
-		top: var(--space-2);
-		right: var(--space-2);
-		width: 28px;
-		height: 28px;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		background-color: var(--color-accent-primary);
-		border-radius: 50%;
-	}
-
-	.selected-badge svg {
-		width: 16px;
-		height: 16px;
-		color: var(--color-text-inverse);
-	}
-
-	.trip-config {
-		background-color: var(--color-bg-secondary);
-		border-radius: var(--radius-lg);
-		padding: var(--space-5);
-		margin-bottom: var(--space-5);
-	}
-
-	.config-grid {
-		display: grid;
-		grid-template-columns: repeat(4, 1fr);
-		gap: var(--space-4);
-	}
-
 	.config-group {
-		display: flex;
-		flex-direction: column;
+		display: grid;
 		gap: var(--space-2);
 	}
 
@@ -385,32 +276,97 @@
 		border-color: var(--color-accent-primary);
 	}
 
-	.selection-summary {
-		background-color: var(--color-accent-quiet);
-		border: 1px solid var(--color-accent-muted);
-		border-radius: var(--radius-lg);
-		padding: var(--space-4);
-		margin-bottom: var(--space-5);
-	}
-
-	.summary-content {
+	.date-chip {
 		display: flex;
 		align-items: center;
+		justify-content: space-between;
+		gap: var(--space-3);
+		margin-top: var(--space-4);
+		padding: var(--space-2) var(--space-3);
+		background-color: var(--color-accent-quiet);
+		border: 1px solid var(--color-accent-muted);
+		border-radius: var(--radius-md);
+		font-family: var(--font-family-system);
+		font-size: var(--font-size-xs);
+		color: var(--color-text-primary);
+	}
+
+	.clear-date {
+		font-family: var(--font-family-system);
+		font-size: var(--font-size-xs);
+		font-weight: var(--font-weight-medium);
+		color: var(--color-accent-primary);
+		background: none;
+		border: none;
+		cursor: pointer;
+		padding: 0;
+	}
+
+	.date-hint {
+		margin: var(--space-4) 0 0;
+		font-family: var(--font-family-system);
+		font-size: var(--font-size-xs);
+		color: var(--color-text-tertiary);
+		line-height: var(--line-height-relaxed);
+	}
+
+	.boats-grid {
+		display: grid;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
 		gap: var(--space-4);
 	}
 
-	.summary-image {
-		width: 80px;
-		height: 60px;
+	.boat-card {
+		display: grid;
+		background-color: var(--color-bg-elevated);
+		border: 2px solid var(--color-border-subtle);
+		border-radius: var(--radius-lg);
+		overflow: hidden;
+	}
+
+	.boat-card.selected {
+		border-color: var(--color-accent-primary);
+		box-shadow: 0 0 0 3px var(--color-accent-muted);
+	}
+
+	.boat-image-container {
+		position: relative;
+		width: 100%;
+		height: 150px;
+		overflow: hidden;
+	}
+
+	.boat-image {
+		width: 100%;
+		height: 100%;
 		object-fit: cover;
+	}
+
+	.boat-tier {
+		position: absolute;
+		top: var(--space-2);
+		left: var(--space-2);
+		padding: var(--space-1) var(--space-2);
+		background-color: rgba(10, 37, 64, 0.8);
+		color: var(--color-text-inverse);
+		font-family: var(--font-family-system);
+		font-size: 10px;
+		font-weight: var(--font-weight-semibold);
+		text-transform: uppercase;
+		letter-spacing: 0.05em;
 		border-radius: var(--radius-sm);
 	}
 
-	.summary-details {
-		flex: 1;
+	.boat-info {
+		display: flex;
+		justify-content: space-between;
+		align-items: end;
+		gap: var(--space-3);
+		padding: var(--space-3);
+		border-bottom: 1px solid var(--color-border-subtle);
 	}
 
-	.summary-boat {
+	.boat-name {
 		font-family: var(--font-family-system);
 		font-size: var(--font-size-sm);
 		font-weight: var(--font-weight-semibold);
@@ -418,86 +374,100 @@
 		margin: 0 0 var(--space-1) 0;
 	}
 
-	.summary-trip {
-		font-family: var(--font-family-system);
-		font-size: var(--font-size-xs);
-		color: var(--color-text-secondary);
-		margin: 0;
-	}
-
-	.summary-price {
-		text-align: right;
-	}
-
-	.price-total {
-		display: block;
-		font-family: var(--font-family-system);
-		font-size: var(--font-size-lg);
-		font-weight: var(--font-weight-semibold);
-		color: var(--color-text-primary);
-	}
-
-	.price-note {
+	.boat-meta {
 		font-family: var(--font-family-system);
 		font-size: var(--font-size-xs);
 		color: var(--color-text-tertiary);
+		margin: 0;
 	}
 
-	.continue-button {
-		display: flex;
-		align-items: center;
-		justify-content: center;
+	.boat-rate {
+		margin: 0;
+		font-family: var(--font-family-system);
+		font-size: var(--font-size-md);
+		font-weight: var(--font-weight-semibold);
+		color: var(--color-accent-primary);
+		white-space: nowrap;
+	}
+
+	.boat-rate span {
+		font-size: var(--font-size-xs);
+		font-weight: var(--font-weight-regular);
+		color: var(--color-text-tertiary);
+	}
+
+	.slots-section {
+		padding: var(--space-3);
+	}
+
+	.slots-label {
+		margin: 0 0 var(--space-2) 0;
+		font-family: var(--font-family-system);
+		font-size: var(--font-size-xs);
+		font-weight: var(--font-weight-medium);
+		color: var(--color-text-secondary);
+	}
+
+	.slots-grid {
+		display: grid;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
 		gap: var(--space-2);
+	}
+
+	.slot-button {
+		height: 34px;
+		border: 1px solid var(--color-border-default);
+		border-radius: var(--radius-sm);
+		background-color: var(--color-bg-primary);
+		color: var(--color-text-primary);
+		font-family: var(--font-family-system);
+		font-size: var(--font-size-xs);
+		font-weight: var(--font-weight-medium);
+		cursor: pointer;
+		transition:
+			border-color var(--motion-duration-fast) var(--motion-ease-standard),
+			background-color var(--motion-duration-fast) var(--motion-ease-standard);
+	}
+
+	.slot-button:hover {
+		border-color: var(--color-accent-primary);
+		background-color: var(--color-accent-quiet);
+	}
+
+	.boat-action {
+		padding: var(--space-3);
+	}
+
+	.select-boat-button {
 		width: 100%;
-		height: var(--button-height);
+		height: 36px;
+		border: none;
+		border-radius: var(--radius-sm);
 		background-color: var(--button-primary-bg);
 		color: var(--button-primary-text);
 		font-family: var(--font-family-system);
-		font-size: var(--font-size-base);
+		font-size: var(--font-size-sm);
 		font-weight: var(--font-weight-semibold);
-		border: none;
-		border-radius: var(--radius-md);
 		cursor: pointer;
 		transition: opacity var(--motion-duration-fast) var(--motion-ease-standard);
 	}
 
-	.continue-button:hover:not(:disabled) {
+	.select-boat-button:hover {
 		opacity: var(--state-hover-opacity);
 	}
 
-	.continue-button:disabled {
-		opacity: var(--state-disabled-opacity);
-		cursor: not-allowed;
-	}
-
-	.continue-button svg {
-		width: 20px;
-		height: 20px;
-	}
-
-	@media (max-width: 768px) {
-		.boats-grid {
+	@media (max-width: 1080px) {
+		.selector-layout {
 			grid-template-columns: 1fr;
 		}
 
-		.config-grid {
-			grid-template-columns: 1fr 1fr;
-			gap: var(--space-3);
-		}
-
-		.summary-content {
-			flex-wrap: wrap;
-		}
-
-		.summary-price {
-			width: 100%;
-			text-align: left;
-			margin-top: var(--space-2);
+		.search-panel-inner {
+			position: static;
 		}
 	}
 
-	@media (max-width: 480px) {
-		.config-grid {
+	@media (max-width: 700px) {
+		.boats-grid {
 			grid-template-columns: 1fr;
 		}
 	}

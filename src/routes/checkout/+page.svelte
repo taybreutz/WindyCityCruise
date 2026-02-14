@@ -1,34 +1,4 @@
 <script lang="ts">
-	//
-	//
-	//
-	//
-	//
-	//
-	//
-	//
-	//
-	//
-	//
-	//
-	// step 1 should be select date or boat
-	// Step 2 is all of the information and attractive display
-	// step 3 is payment and confirmation!
-
-	//
-	//
-	//
-	//
-	//
-	//
-	//
-	//
-	//
-	//
-	//
-	//
-
-	import { page } from '$app/stores';
 	import ProgressIndicator from '$lib/components_checkout/ProgressIndicator.svelte';
 	import BookingSummary from '$lib/components_checkout/BookingSummary.svelte';
 	import BoatSelector from '$lib/components_checkout/BoatSelector.svelte';
@@ -36,13 +6,7 @@
 	import GuestPaymentForm from '$lib/components_checkout/GuestPaymentForm.svelte';
 	import BookingConfirmation from '$lib/components_checkout/BookingConfirmation.svelte';
 
-	// Step management: 1a = select boat, 1b = review details, 2 = guest/payment, 3 = confirmation
-	// TEMP: Starting on 'review' with pre-selected data for team review
-	let substep = $state<'select' | 'review'>('review');
-	let currentStep = $state(1);
-
-	// Booking state - TEMP: pre-populated for team review
-	let selectedBoat = $state<{
+	type SelectedBoat = {
 		id: string;
 		name: string;
 		type: string;
@@ -50,20 +14,20 @@
 		capacity: number;
 		rate: number;
 		tier: string;
-	} | null>({
-		id: '46-sea-ray',
-		name: "46' Sea Ray Express",
-		type: 'Premium Yacht',
-		image:
-			'https://chicagoboatinghub.com/cdn/shop/files/1_e454cb2e-4054-48a2-b88c-a05bfd3b530a.jpg?v=1709601158&width=3840',
-		capacity: 15,
-		rate: 325,
-		tier: 'Premium'
-	});
+	};
 
-	let tripDate = $state('2026-02-15');
-	// Default values for time, duration, guests
-	let tripTime = $state('2:00 PM');
+	// Internal flow:
+	// currentStep 1 + substep select = Step 1 (Select Experience)
+	// currentStep 1 + substep review = Step 2 (Boat Details)
+	// currentStep 2 and 3 map to Step 3 (Guest & Payment / Confirmation)
+	let substep = $state<'select' | 'review'>('select');
+	let currentStep = $state(1);
+	let selectionMethod = $state<'date' | 'boat' | null>(null);
+
+	let selectedBoat = $state<SelectedBoat | null>(null);
+
+	let tripDate = $state('');
+	let tripTime = $state('');
 	let tripDuration = $state(4);
 	let tripGuests = $state(8);
 
@@ -93,18 +57,12 @@
 			: 0
 	);
 
+	const progressStep = $derived(currentStep === 1 ? (substep === 'review' ? 2 : 1) : 3);
+	const canContinueToGuest = $derived(Boolean(selectedBoat && tripDate && tripTime));
+
 	const confirmationNumber = $derived(
 		'CHB-' + Math.random().toString(36).substring(2, 8).toUpperCase()
 	);
-
-	// Check for URL params to pre-select boat
-	const urlParams = $derived($page.url.searchParams);
-	$effect(() => {
-		const boatParam = urlParams.get('boat');
-		if (boatParam && !selectedBoat) {
-			// Pre-select from URL if provided
-		}
-	});
 
 	function formatDate(dateStr: string): string {
 		if (!dateStr) return '';
@@ -117,9 +75,20 @@
 		});
 	}
 
-	function handleBoatSelected(boat: typeof selectedBoat, date: string) {
+	function handleSelectByDate(boat: SelectedBoat, date: string, time: string) {
 		selectedBoat = boat;
 		tripDate = date;
+		tripTime = time;
+		selectionMethod = 'date';
+		substep = 'review';
+		window.scrollTo({ top: 0, behavior: 'smooth' });
+	}
+
+	function handleSelectByBoat(boat: SelectedBoat) {
+		selectedBoat = boat;
+		tripDate = '';
+		tripTime = '';
+		selectionMethod = 'boat';
 		substep = 'review';
 		window.scrollTo({ top: 0, behavior: 'smooth' });
 	}
@@ -144,6 +113,14 @@
 		currentStep = 3;
 		window.scrollTo({ top: 0, behavior: 'smooth' });
 	}
+
+	function handleAvailabilityDateChange(date: string) {
+		tripDate = date;
+	}
+
+	function handleAvailabilityTimeSelect(time: string) {
+		tripTime = time;
+	}
 </script>
 
 <svelte:head>
@@ -151,7 +128,7 @@
 </svelte:head>
 
 <div class="checkout-page">
-	<ProgressIndicator {currentStep} />
+	<ProgressIndicator currentStep={progressStep} />
 
 	<div class="checkout-container" class:full-width={currentStep === 1 && substep === 'select'}>
 		<main class="checkout-main">
@@ -159,8 +136,9 @@
 				{#if substep === 'select'}
 					<BoatSelector
 						selectedBoatId={selectedBoat?.id || ''}
-						selectedDate={tripDate}
-						onContinue={handleBoatSelected}
+						selectedDate={selectionMethod === 'date' ? tripDate : ''}
+						onSelectByBoat={handleSelectByBoat}
+						onSelectByDate={handleSelectByDate}
 					/>
 				{:else if substep === 'review' && bookingData}
 					<div class="back-nav">
@@ -172,7 +150,14 @@
 							Change Boat or Date
 						</button>
 					</div>
-					<BoatDetails booking={bookingData} />
+					<BoatDetails
+						booking={bookingData}
+						showAvailabilityCalendar={selectionMethod === 'boat'}
+						selectedDate={tripDate}
+						selectedTime={tripTime}
+						onDateChange={handleAvailabilityDateChange}
+						onTimeSelect={handleAvailabilityTimeSelect}
+					/>
 				{/if}
 			{:else if currentStep === 2}
 				<GuestPaymentForm onSubmit={completeBooking} onBack={goToStep1} />
@@ -194,6 +179,7 @@
 						booking={bookingData}
 						showContactForm={currentStep === 1 && substep === 'review'}
 						onContinue={currentStep === 1 && substep === 'review' ? goToStep2 : undefined}
+						canContinue={currentStep === 1 && substep === 'review' ? canContinueToGuest : true}
 					/>
 				</aside>
 			{/if}

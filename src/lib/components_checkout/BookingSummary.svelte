@@ -16,9 +16,10 @@
 		booking: BookingData;
 		showContactForm?: boolean;
 		onContinue?: () => void;
+		canContinue?: boolean;
 	}
 
-	let { booking, showContactForm = false, onContinue }: Props = $props();
+	let { booking, showContactForm = false, onContinue, canContinue = true }: Props = $props();
 
 	let promoCode = $state('');
 	let promoApplied = $state(false);
@@ -37,6 +38,12 @@
 			promoApplied = true;
 		}
 	}
+
+	function handleContinue() {
+		if (typeof onContinue === 'function') {
+			onContinue();
+		}
+	}
 </script>
 
 <aside class="booking-summary">
@@ -51,11 +58,11 @@
 	<div class="trip-details">
 		<div class="detail-row">
 			<span class="detail-label">Date</span>
-			<span class="detail-value">{booking.date}</span>
+			<span class="detail-value">{booking.date || 'Select date'}</span>
 		</div>
 		<div class="detail-row">
 			<span class="detail-label">Time</span>
-			<span class="detail-value">{booking.time}</span>
+			<span class="detail-value">{booking.time || 'Select time'}</span>
 		</div>
 		<div class="detail-row">
 			<span class="detail-label">Duration</span>
@@ -125,7 +132,7 @@
 		</div>
 		<div class="support-info">
 			<span class="support-label">Need help?</span>
-			<a href="tel:+18335552628" class="support-phone">(833) 555-BOAT</a>
+			<a href="tel:+14074550252" class="support-phone">(407) 455-0252</a>
 		</div>
 	</div>
 
@@ -161,8 +168,8 @@
 					bind:value={contactPhone}
 				/>
 			</div>
-			{#if onContinue}
-				<button class="continue-button" onclick={onContinue}>
+			{#if typeof onContinue === 'function'}
+				<button class="continue-button" onclick={handleContinue} disabled={!canContinue}>
 					Continue to Guest Details
 					<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
 						<line x1="5" y1="12" x2="19" y2="12" />
@@ -434,8 +441,13 @@
 		margin-top: var(--space-4);
 	}
 
-	.continue-button:hover {
+	.continue-button:hover:not(:disabled) {
 		opacity: var(--state-hover-opacity);
+	}
+
+	.continue-button:disabled {
+		opacity: var(--state-disabled-opacity);
+		cursor: not-allowed;
 	}
 
 	.continue-button:active {
