@@ -74,9 +74,11 @@
 
 	.logo-text {
 		font-family: var(--font-family-system);
-		font-size: var(--font-size-md);
+		font-size: var(--font-size-lg);
 		font-weight: 900;
 		line-height: var(--line-height-tight);
+		color: #f8c61e;
+		text-shadow: 1px 1px 0px #252c37;
 	}
 
 	.nav-links {

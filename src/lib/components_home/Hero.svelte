@@ -1,30 +1,14 @@
-<script lang="ts">
-	interface Props {
-		title?: string;
-		subtitle?: string;
-		ctaText?: string;
-		ctaHref?: string;
-		ctaText2?: string;
-		ctaHref2?: string;
-	}
-
-	let {
-		title = 'Chicago Boat Rentals & Luxury Yacht Charters',
-		subtitle = 'The all in one place for the best boats, yachts, and water experiences in Chicago.',
-		ctaText = 'Book Now',
-		ctaHref = '/book',
-		ctaText2 = 'Explore Boats',
-		ctaHref2 = '/boats'
-	}: Props = $props();
-</script>
+<script lang="ts"></script>
 
 <section class="hero">
 	<div class="hero-content">
-		<h1 class="hero-title">{title}</h1>
-		<p class="hero-subtitle">{subtitle}</p>
+		<h1 class="hero-title">Chicago Boat Rentals & <br /> Luxury Yacht Charters</h1>
+		<p class="hero-subtitle">
+			The all in one place for the best boats, yachts, and water experiences in Chicago.
+		</p>
 		<div class="hero-cta-container">
-			<a href={ctaHref} class="hero-cta hero-cta-primary">{ctaText}</a>
-			<a href={ctaHref2} class="hero-cta hero-cta-secondary">{ctaText2}</a>
+			<a href="/rentals" class="hero-cta hero-cta-primary">Book a Boat</a>
+			<a href="/boat-club" class="hero-cta hero-cta-secondary">Memberships</a>
 		</div>
 	</div>
 	<div class="hero-media">
@@ -93,7 +77,6 @@
 		font-size: var(--font-size-2xl);
 		font-weight: 900;
 		line-height: var(--line-height-tight);
-		color: var(--color-text-primary);
 		margin: 0;
 	}
 

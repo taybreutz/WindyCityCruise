@@ -225,14 +225,7 @@
 	<title>Chicago Boating Hub | Boat Rentals & Charters in the Playpen</title>
 </svelte:head>
 
-<Home_Hero
-	title="Chicago Boat Rentals & Luxury Yacht Charters"
-	subtitle="The all in one place for the best boats, yachts, and water experiences in Chicago."
-	ctaText="Book a Boat"
-	ctaHref="/rentals"
-	ctaText2="Memberships"
-	ctaHref2="/boat-club"
-/>
+<Home_Hero />
 
 <FindBoatMapSection />
 
