@@ -110,7 +110,7 @@
 </script>
 
 <div class="selector-layout">
-	<aside class="search-panel">
+	<aside class="search-panel" style="height: 100%;">
 		<div class="search-panel-inner">
 			<div class="section-header">
 				<h2 class="section-title">Search By Date</h2>
