@@ -236,6 +236,7 @@
 		cursor: pointer;
 		text-align: left;
 		transition: all var(--motion-duration-fast) var(--motion-ease-standard);
+		max-width: 442px;
 	}
 
 	.boat-card:hover {

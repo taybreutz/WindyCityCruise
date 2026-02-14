@@ -14,13 +14,18 @@
 
 	interface Props {
 		booking: BookingData;
+		showContactForm?: boolean;
+		onContinue?: () => void;
 	}
 
-	let { booking }: Props = $props();
+	let { booking, showContactForm = false, onContinue }: Props = $props();
 
 	let promoCode = $state('');
 	let promoApplied = $state(false);
 	let promoDiscount = $state(0);
+	let contactName = $state('');
+	let contactEmail = $state('');
+	let contactPhone = $state('');
 
 	const subtotal = $derived(booking.baseRate * booking.duration + booking.captainFee);
 	const taxes = $derived(subtotal * booking.taxRate);
@@ -123,6 +128,50 @@
 			<a href="tel:+18335552628" class="support-phone">(833) 555-BOAT</a>
 		</div>
 	</div>
+
+	{#if showContactForm}
+		<div class="contact-section">
+			<div class="contact-field">
+				<label class="contact-label" for="checkout-contact-name">Name</label>
+				<input
+					id="checkout-contact-name"
+					class="contact-input"
+					type="text"
+					placeholder="Enter your name"
+					bind:value={contactName}
+				/>
+			</div>
+			<div class="contact-field">
+				<label class="contact-label" for="checkout-contact-email">Email</label>
+				<input
+					id="checkout-contact-email"
+					class="contact-input"
+					type="email"
+					placeholder="Enter your email"
+					bind:value={contactEmail}
+				/>
+			</div>
+			<div class="contact-field">
+				<label class="contact-label" for="checkout-contact-phone">Phone</label>
+				<input
+					id="checkout-contact-phone"
+					class="contact-input"
+					type="tel"
+					placeholder="Enter your phone"
+					bind:value={contactPhone}
+				/>
+			</div>
+			{#if onContinue}
+				<button class="continue-button" onclick={onContinue}>
+					Continue to Guest Details
+					<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+						<line x1="5" y1="12" x2="19" y2="12" />
+						<polyline points="12 5 19 12 12 19" />
+					</svg>
+				</button>
+			{/if}
+		</div>
+	{/if}
 </aside>
 
 <style>
@@ -321,6 +370,82 @@
 		padding: var(--space-3);
 		background-color: var(--color-accent-quiet);
 		border-radius: var(--radius-md);
+	}
+
+	.contact-section {
+		display: grid;
+		gap: var(--space-3);
+		margin-top: var(--space-4);
+		padding-top: var(--space-4);
+		border-top: 1px solid var(--color-border-subtle);
+	}
+
+	.contact-field {
+		display: grid;
+		gap: var(--space-1);
+	}
+
+	.contact-label {
+		font-family: var(--font-family-system);
+		font-size: var(--font-size-xs);
+		color: var(--color-text-secondary);
+	}
+
+	.contact-input {
+		width: 100%;
+		font-family: var(--font-family-system);
+		font-size: var(--font-size-sm);
+		color: var(--color-text-primary);
+		background-color: var(--color-bg-primary);
+		border: 1px solid var(--color-border-default);
+		border-radius: var(--radius-sm);
+		padding: var(--space-2) var(--space-3);
+		transition:
+			border-color var(--motion-duration-fast) var(--motion-ease-standard),
+			box-shadow var(--motion-duration-fast) var(--motion-ease-standard);
+	}
+
+	.contact-input::placeholder {
+		color: var(--color-text-muted);
+	}
+
+	.contact-input:focus {
+		outline: none;
+		border-color: var(--color-accent-primary);
+		box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-accent-primary) 16%, transparent);
+	}
+
+	.continue-button {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: var(--space-2);
+		width: 100%;
+		height: var(--button-height);
+		background-color: var(--button-primary-bg);
+		color: var(--button-primary-text);
+		font-family: var(--font-family-system);
+		font-size: var(--font-size-base);
+		font-weight: var(--font-weight-semibold);
+		border: none;
+		border-radius: var(--radius-md);
+		cursor: pointer;
+		transition: opacity var(--motion-duration-fast) var(--motion-ease-standard);
+		margin-top: var(--space-4);
+	}
+
+	.continue-button:hover {
+		opacity: var(--state-hover-opacity);
+	}
+
+	.continue-button:active {
+		opacity: var(--state-pressed-opacity);
+		transform: scale(0.99);
+	}
+
+	.continue-button svg {
+		width: 20px;
+		height: 20px;
 	}
 
 	.support-icon {

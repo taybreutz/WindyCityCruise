@@ -12,10 +12,9 @@
 
 	interface Props {
 		booking: BookingData;
-		onContinue: () => void;
 	}
 
-	let { booking, onContinue }: Props = $props();
+	let { booking }: Props = $props();
 
 	const amenities = [
 		{ icon: 'speaker', label: 'Premium Sound System' },
@@ -91,14 +90,6 @@
 			</p>
 		</div>
 	</div>
-
-	<button class="continue-button" onclick={onContinue}>
-		Continue to Guest Details
-		<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-			<line x1="5" y1="12" x2="19" y2="12" />
-			<polyline points="12 5 19 12 12 19" />
-		</svg>
-	</button>
 </div>
 
 <style>
@@ -259,38 +250,6 @@
 		color: var(--color-text-secondary);
 		margin: 0;
 		line-height: var(--line-height-relaxed);
-	}
-
-	.continue-button {
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		gap: var(--space-2);
-		width: 100%;
-		height: var(--button-height);
-		background-color: var(--button-primary-bg);
-		color: var(--button-primary-text);
-		font-family: var(--font-family-system);
-		font-size: var(--font-size-base);
-		font-weight: var(--font-weight-semibold);
-		border: none;
-		border-radius: var(--radius-md);
-		cursor: pointer;
-		transition: opacity var(--motion-duration-fast) var(--motion-ease-standard);
-	}
-
-	.continue-button:hover {
-		opacity: var(--state-hover-opacity);
-	}
-
-	.continue-button:active {
-		opacity: var(--state-pressed-opacity);
-		transform: scale(0.99);
-	}
-
-	.continue-button svg {
-		width: 20px;
-		height: 20px;
 	}
 
 	@media (max-width: 600px) {

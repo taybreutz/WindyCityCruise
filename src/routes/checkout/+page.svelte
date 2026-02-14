@@ -172,7 +172,7 @@
 							Change Boat or Date
 						</button>
 					</div>
-					<BoatDetails booking={bookingData} onContinue={goToStep2} />
+					<BoatDetails booking={bookingData} />
 				{/if}
 			{:else if currentStep === 2}
 				<GuestPaymentForm onSubmit={completeBooking} onBack={goToStep1} />
@@ -190,7 +190,11 @@
 		{#if currentStep !== 3 && !(currentStep === 1 && substep === 'select')}
 			{#if bookingData}
 				<aside class="checkout-sidebar">
-					<BookingSummary booking={bookingData} />
+					<BookingSummary
+						booking={bookingData}
+						showContactForm={currentStep === 1 && substep === 'review'}
+						onContinue={currentStep === 1 && substep === 'review' ? goToStep2 : undefined}
+					/>
 				</aside>
 			{/if}
 		{/if}
@@ -207,14 +211,14 @@
 		display: grid;
 		grid-template-columns: 1fr 380px;
 		gap: var(--space-6);
-		max-width: 1270px;
+		max-width: 1100px;
 		margin: 0 auto;
 		padding: var(--space-6) var(--space-5);
 	}
 
 	.checkout-container.full-width {
 		grid-template-columns: 1fr;
-		max-width: 900px;
+		max-width: 1100px;
 	}
 
 	.checkout-main {
