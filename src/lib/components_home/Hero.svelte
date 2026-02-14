@@ -43,7 +43,7 @@
 <style>
 	.hero {
 		position: relative;
-		height: 80vh;
+		height: 70vh;
 		max-width: var(--content-max-width);
 		display: grid;
 		grid-template-columns: 1fr 1.5fr;

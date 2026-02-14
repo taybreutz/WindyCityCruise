@@ -207,7 +207,7 @@
 		display: grid;
 		grid-template-columns: 1fr 380px;
 		gap: var(--space-6);
-		max-width: 1100px;
+		max-width: 1270px;
 		margin: 0 auto;
 		padding: var(--space-6) var(--space-5);
 	}
