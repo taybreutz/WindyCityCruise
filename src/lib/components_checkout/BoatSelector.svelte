@@ -154,6 +154,7 @@
 				{/if}
 			</p>
 		</div>
+		<div class="passenger-badge">Up to 13 passengers</div>
 
 		<div class="boats-grid">
 			{#each boats as boat}
@@ -314,6 +315,25 @@
 		display: grid;
 		grid-template-columns: repeat(2, minmax(0, 1fr));
 		gap: var(--space-4);
+		padding: 0.5rem;
+		border-right: 1px solid var(--color-border-subtle);
+		border-radius: 1rem;
+	}
+
+	.passenger-badge {
+		position: sticky;
+		top: var(--space-5);
+		z-index: 2;
+		margin: 0 0 var(--space-3) auto;
+		padding: 0.375rem 0.75rem;
+		width: fit-content;
+		border-radius: 999px;
+		background-color: var(--color-accent-quiet);
+		border: 1px solid var(--color-accent-muted);
+		color: var(--color-accent-primary);
+		font-family: var(--font-family-system);
+		font-size: var(--font-size-xs);
+		font-weight: var(--font-weight-semibold);
 	}
 
 	.boat-card {
@@ -463,6 +483,16 @@
 
 		.search-panel-inner {
 			position: static;
+		}
+
+		.passenger-badge {
+			display: none;
+		}
+
+		.boats-grid {
+			padding: 0;
+			border-right: none;
+			border-radius: 0;
 		}
 	}
 
