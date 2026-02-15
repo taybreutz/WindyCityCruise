@@ -6,6 +6,7 @@
 		getAvailableStartTimes,
 		formatTimeDisplay
 	} from '$lib/availability';
+	import type { Booking, ItemDateOverride } from '$lib/types/database';
 
 	interface SelectedBoat {
 		id: string;
@@ -25,7 +26,7 @@
 		selectedBoatId: string;
 		selectedDate: string;
 		onSelectByBoat: (boat: SelectedBoat) => void;
-		onSelectByDate: (boat: SelectedBoat, date: string, time: string) => void;
+		onSelectByDate: (boat: SelectedBoat, date: string, time: string, duration: number) => void;
 	}
 
 	let {
@@ -43,6 +44,8 @@
 	let showCustomCalendar = $state(false);
 	let loadingSlots = $state<Record<string, boolean>>({});
 	let slotsMap = $state<Record<string, string[]>>({});
+	let itemAvailable = $state<Record<string, boolean>>({});
+	let itemShortestDuration = $state<Record<string, number>>({});
 	let calendarMonth = $state(new Date());
 	let datePickerElement: HTMLDivElement | null = null;
 
@@ -136,13 +139,13 @@
 		};
 	}
 
-	async function fetchAvailability(item: Item, dateValue: string): Promise<string[]> {
+	async function fetchAvailability(item: Item, dateValue: string): Promise<void> {
 		const [
 			{ data: itemSeasons },
 			{ data: seasonTemplates },
 			{ data: pricingRules },
 			{ data: overrides },
-			{ data: bookings }
+			{ data: bookingsData }
 		] = await Promise.all([
 			supabase.from('item_seasons').select('*').eq('item_id', item.id),
 			supabase.from('season_templates').select('*').eq('org_id', orgId).eq('is_active', true),
@@ -160,7 +163,7 @@
 				.neq('status', 'cancelled')
 		]);
 
-		const override = overrides?.[0] ?? null;
+		const override: ItemDateOverride | null = overrides?.[0] ?? null;
 
 		const eff = getEffectiveAvailability(
 			item,
@@ -171,9 +174,16 @@
 			dateValue
 		);
 
-		if (!eff.available || eff.availableDurations.length === 0) return [];
+		if (!eff.available || eff.availableDurations.length === 0) {
+			slotsMap[item.id] = [];
+			itemAvailable[item.id] = false;
+			return;
+		}
 
-		// Check for enforced slots from date override
+		itemAvailable[item.id] = true;
+		const shortest = Math.min(...eff.availableDurations);
+		itemShortestDuration[item.id] = shortest;
+
 		let enforcedSlots: string[] = [];
 		if (override?.override_group_id) {
 			const { data: overrideSlots } = await supabase
@@ -181,35 +191,38 @@
 				.select('start_time')
 				.eq('item_id', item.id)
 				.eq('override_date', dateValue);
-			enforcedSlots = (overrideSlots ?? []).map((s) => s.start_time);
+			enforcedSlots = (overrideSlots ?? []).map((s: { start_time: string }) => s.start_time);
 		}
 
-		const duration = eff.availableDurations[0];
-		return getAvailableStartTimes(
+		slotsMap[item.id] = getAvailableStartTimes(
 			dateValue,
-			duration,
+			shortest,
 			eff.operatingStart,
 			eff.operatingEnd,
-			bookings ?? [],
+			(bookingsData ?? []) as Booking[],
 			item.quantity,
 			eff.bufferMinutes,
-			enforcedSlots
+			enforcedSlots,
+			eff.slotIntervalMinutes
 		);
 	}
 
 	$effect(() => {
 		if (!date) {
 			slotsMap = {};
+			itemAvailable = {};
+			itemShortestDuration = {};
 			return;
 		}
 
 		const currentDate = date;
 		slotsMap = {};
+		itemAvailable = {};
+		itemShortestDuration = {};
 
 		for (const item of items) {
 			loadingSlots[item.id] = true;
-			fetchAvailability(item, currentDate).then((slots) => {
-				slotsMap[item.id] = slots;
+			fetchAvailability(item, currentDate).then(() => {
 				loadingSlots[item.id] = false;
 			});
 		}
@@ -391,8 +404,10 @@
 						<div class="slots-section">
 							{#if loadingSlots[item.id]}
 								<p class="slots-label">Loading availability...</p>
-							{:else if (slotsMap[item.id] ?? []).length === 0}
+							{:else if !itemAvailable[item.id]}
 								<p class="slots-label slots-none">No availability</p>
+							{:else if (slotsMap[item.id] ?? []).length === 0}
+								<p class="slots-label slots-none">No times available</p>
 							{:else}
 								<p class="slots-label">Available Times</p>
 								<div class="slots-grid">
@@ -400,7 +415,7 @@
 										<button
 											type="button"
 											class="slot-button"
-											onclick={() => onSelectByDate(boat, date, slot)}
+											onclick={() => onSelectByDate(boat, date, slot, itemShortestDuration[item.id])}
 										>
 											{formatTimeDisplay(slot)}
 										</button>

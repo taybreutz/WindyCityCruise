@@ -33,7 +33,6 @@
 
 <style>
 	.navbar {
-		margin-top: 1rem;
 		top: 0;
 		left: 0;
 		right: 0;
@@ -53,9 +52,8 @@
 	}
 
 	.navbar-content {
-		max-width: var(--content-max-width);
+		max-width: 1800px;
 		height: 100%;
-		margin: 0 auto;
 		padding: var(--space-3) var(--space-5);
 		display: flex;
 		align-items: center;

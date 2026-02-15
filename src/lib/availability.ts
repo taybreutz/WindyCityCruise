@@ -13,10 +13,17 @@ export interface EffectiveAvailability {
 	operatingStart: string;
 	operatingEnd: string;
 	bufferMinutes: number;
-	minimumHours: number;
+	slotIntervalMinutes: number;
 	hourlyRate: number;
 	availableDurations: number[];
 	pricingRules: PricingRule[];
+}
+
+/**
+ * Return the array if it has elements, otherwise null (so ?? chains skip it).
+ */
+function nonEmpty(arr: number[] | null | undefined): number[] | null {
+	return arr && arr.length > 0 ? arr : null;
 }
 
 /**
@@ -66,7 +73,7 @@ export function getEffectiveAvailability(
 			operatingStart: '09:00',
 			operatingEnd: '20:00',
 			bufferMinutes: item.buffer_minutes,
-			minimumHours: item.minimum_hours,
+			slotIntervalMinutes: 30,
 			hourlyRate: item.hourly_rate,
 			availableDurations: [],
 			pricingRules: []
@@ -80,7 +87,7 @@ export function getEffectiveAvailability(
 			operatingStart: '09:00',
 			operatingEnd: '20:00',
 			bufferMinutes: item.buffer_minutes,
-			minimumHours: item.minimum_hours,
+			slotIntervalMinutes: 30,
 			hourlyRate: item.hourly_rate,
 			availableDurations: [],
 			pricingRules: []
@@ -95,7 +102,7 @@ export function getEffectiveAvailability(
 			operatingStart: '09:00',
 			operatingEnd: '20:00',
 			bufferMinutes: item.buffer_minutes,
-			minimumHours: item.minimum_hours,
+			slotIntervalMinutes: 30,
 			hourlyRate: item.hourly_rate,
 			availableDurations: [],
 			pricingRules: []
@@ -108,11 +115,12 @@ export function getEffectiveAvailability(
 	// Resolve hourly rate: per-boat season rate > item default
 	const effectiveRate = itemSeason.base_hourly_rate ?? item.hourly_rate;
 
-	// Resolve available durations: date override > per-boat override > template > empty
+	// Resolve available durations: date override > per-boat season > template > item default
 	const effectiveDurations =
-		override?.available_durations ??
-		itemSeason.available_durations ??
-		template.available_durations ??
+		nonEmpty(override?.available_durations) ??
+		nonEmpty(itemSeason.available_durations) ??
+		nonEmpty(template.available_durations) ??
+		nonEmpty(item.available_durations) ??
 		[];
 
 	return {
@@ -126,7 +134,7 @@ export function getEffectiveAvailability(
 			itemSeason.operating_end_time ??
 			template.operating_end_time,
 		bufferMinutes: override?.buffer_minutes ?? item.buffer_minutes,
-		minimumHours: override?.minimum_hours ?? item.minimum_hours,
+		slotIntervalMinutes: template.slot_interval_minutes ?? 30,
 		hourlyRate: effectiveRate,
 		availableDurations: effectiveDurations,
 		pricingRules: seasonRules
@@ -247,7 +255,8 @@ export function getAvailableStartTimes(
 	bookings: Booking[],
 	quantity: number,
 	bufferMinutes: number,
-	enforcedSlots: string[] = []
+	enforcedSlots: string[] = [],
+	slotIntervalMinutes: number = 30
 ): string[] {
 	const opStart = timeToMinutes(normalizeTimeFormat(operatingStart));
 	const opEnd = timeToMinutes(normalizeTimeFormat(operatingEnd));
@@ -262,8 +271,7 @@ export function getAvailableStartTimes(
 			}
 		}
 	} else {
-		// Generate at 15-minute intervals
-		for (let t = opStart; t + durationMinutes <= opEnd; t += 15) {
+		for (let t = opStart; t + durationMinutes <= opEnd; t += slotIntervalMinutes) {
 			candidateTimes.push(t);
 		}
 	}
@@ -285,6 +293,16 @@ export function minutesToTime(minutes: number): string {
 	const h = Math.floor(minutes / 60);
 	const m = minutes % 60;
 	return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+}
+
+/**
+ * Format a duration in hours as a short label.
+ * 0.5 -> "30 min", 1 -> "1 hr", 1.5 -> "1.5 hrs", 2 -> "2 hrs"
+ */
+export function formatDurationShort(hours: number): string {
+	if (hours === 0.5) return '30 min';
+	if (hours === 1) return '1 hr';
+	return `${hours} hrs`;
 }
 
 /**

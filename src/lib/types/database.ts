@@ -20,7 +20,6 @@ export interface Item {
 	image_url: string | null;
 	capacity: number;
 	hourly_rate: number;
-	minimum_hours: number;
 	is_active: boolean;
 	is_archived: boolean;
 	amenities: string[];
@@ -28,8 +27,10 @@ export interface Item {
 	quantity: number;
 	unit_names?: string[];
 	unit_notes?: string[];
+	unit_statuses?: string[];
 	buffer_minutes: number;
 	available_durations: number[];
+	captain_required: boolean;
 	created_by: string | null;
 	updated_by: string | null;
 	created_at: string;
@@ -71,7 +72,9 @@ export interface SeasonTemplate {
 	operating_start_time: string;
 	operating_end_time: string;
 	days_of_week: number[];
-	available_durations: number[];
+	available_durations?: number[];
+	buffer_minutes?: number;
+	slot_interval_minutes?: number;
 	is_active: boolean;
 	created_by: string | null;
 	updated_by: string | null;
@@ -117,7 +120,6 @@ export interface ItemDateOverride {
 	operating_start_time: string | null;
 	operating_end_time: string | null;
 	buffer_minutes: number | null;
-	minimum_hours: number | null;
 	price_multiplier: number | null;
 	price_flat_rate: number | null;
 	available_durations: number[] | null;
@@ -135,5 +137,4 @@ export interface ItemDateOverrideSlot {
 	override_date: string;
 	start_time: string;
 	created_at: string;
-	updated_at: string;
 }

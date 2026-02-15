@@ -81,10 +81,11 @@
 		});
 	}
 
-	function handleSelectByDate(boat: SelectedBoat, date: string, time: string) {
+	function handleSelectByDate(boat: SelectedBoat, date: string, time: string, duration: number) {
 		selectedBoat = boat;
 		tripDate = date;
 		tripTime = time;
+		tripDuration = duration;
 		selectionMethod = 'date';
 		substep = 'review';
 		window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -127,6 +128,10 @@
 	function handleAvailabilityTimeSelect(time: string) {
 		tripTime = time;
 	}
+
+	function handleAvailabilityDurationChange(duration: number) {
+		tripDuration = duration;
+	}
 </script>
 
 <svelte:head>
@@ -161,11 +166,12 @@
 					</div>
 					<BoatDetails
 						booking={bookingData}
-						showAvailabilityCalendar={selectionMethod === 'boat'}
 						selectedDate={tripDate}
 						selectedTime={tripTime}
+						selectedDuration={tripDuration}
 						onDateChange={handleAvailabilityDateChange}
 						onTimeSelect={handleAvailabilityTimeSelect}
+						onDurationChange={handleAvailabilityDurationChange}
 						{supabase}
 						orgId={data.orgId}
 						item={selectedBoat.item}

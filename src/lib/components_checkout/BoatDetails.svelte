@@ -4,8 +4,11 @@
 	import {
 		getEffectiveAvailability,
 		getAvailableStartTimes,
-		formatTimeDisplay
+		formatTimeDisplay,
+		formatDurationShort
 	} from '$lib/availability';
+	import type { EffectiveAvailability } from '$lib/availability';
+	import type { Booking, ItemDateOverride } from '$lib/types/database';
 
 	interface BookingData {
 		boatName: string;
@@ -20,11 +23,12 @@
 
 	interface Props {
 		booking: BookingData;
-		showAvailabilityCalendar?: boolean;
 		selectedDate?: string;
 		selectedTime?: string;
+		selectedDuration?: number;
 		onDateChange?: (date: string) => void;
 		onTimeSelect?: (time: string) => void;
+		onDurationChange?: (duration: number) => void;
 		supabase: SupabaseClient;
 		orgId: string;
 		item: Item;
@@ -32,11 +36,12 @@
 
 	let {
 		booking,
-		showAvailabilityCalendar = false,
 		selectedDate = '',
 		selectedTime = '',
+		selectedDuration = 0,
 		onDateChange,
 		onTimeSelect,
+		onDurationChange,
 		supabase,
 		orgId,
 		item
@@ -51,8 +56,12 @@
 
 	const weekdayLabels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 	const todayIso = new Date().toISOString().split('T')[0];
-	let showCustomCalendar = $state(false);
 	let loadingSlots = $state(false);
+
+	// Cached availability data so we can regenerate slots without refetching
+	let cachedEff = $state<EffectiveAvailability | null>(null);
+	let cachedBookings = $state<Booking[]>([]);
+	let cachedEnforcedSlots = $state<string[]>([]);
 
 	function parseIsoDate(value: string): Date | null {
 		if (!value) return null;
@@ -72,19 +81,15 @@
 	let availabilityDate = $state('');
 	let availabilityTime = $state('');
 	let availabilitySlots = $state<string[]>([]);
+	let activeDuration = $state(0);
 
 	$effect(() => {
 		availabilityDate = selectedDate;
 		availabilityTime = selectedTime;
+		if (selectedDuration) activeDuration = selectedDuration;
 		const parsed = parseIsoDate(selectedDate);
 		if (parsed) {
 			calendarMonth = new Date(parsed.getFullYear(), parsed.getMonth(), 1);
-		}
-	});
-
-	$effect(() => {
-		if (showAvailabilityCalendar) {
-			showCustomCalendar = true;
 		}
 	});
 
@@ -92,23 +97,23 @@
 	$effect(() => {
 		if (!availabilityDate) {
 			availabilitySlots = [];
+			cachedEff = null;
 			return;
 		}
 
 		loadingSlots = true;
-		fetchAvailabilitySlots(availabilityDate).then((slots) => {
-			availabilitySlots = slots;
+		fetchAvailabilityData(availabilityDate).then(() => {
 			loadingSlots = false;
 		});
 	});
 
-	async function fetchAvailabilitySlots(dateValue: string): Promise<string[]> {
+	async function fetchAvailabilityData(dateValue: string): Promise<void> {
 		const [
 			{ data: itemSeasons },
 			{ data: seasonTemplates },
 			{ data: pricingRules },
 			{ data: overrides },
-			{ data: bookings }
+			{ data: bookingsData }
 		] = await Promise.all([
 			supabase.from('item_seasons').select('*').eq('item_id', item.id),
 			supabase.from('season_templates').select('*').eq('org_id', orgId).eq('is_active', true),
@@ -117,7 +122,7 @@
 			supabase.from('bookings').select('*').eq('item_id', item.id).eq('trip_date', dateValue).neq('status', 'cancelled')
 		]);
 
-		const override = overrides?.[0] ?? null;
+		const override: ItemDateOverride | null = overrides?.[0] ?? null;
 
 		const eff = getEffectiveAvailability(
 			item,
@@ -128,8 +133,6 @@
 			dateValue
 		);
 
-		if (!eff.available || eff.availableDurations.length === 0) return [];
-
 		let enforcedSlots: string[] = [];
 		if (override?.override_group_id) {
 			const { data: overrideSlots } = await supabase
@@ -137,20 +140,53 @@
 				.select('start_time')
 				.eq('item_id', item.id)
 				.eq('override_date', dateValue);
-			enforcedSlots = (overrideSlots ?? []).map((s) => s.start_time);
+			enforcedSlots = (overrideSlots ?? []).map((s: { start_time: string }) => s.start_time);
 		}
 
-		const duration = eff.availableDurations[0];
-		return getAvailableStartTimes(
+		cachedEff = eff;
+		cachedBookings = (bookingsData ?? []) as Booking[];
+		cachedEnforcedSlots = enforcedSlots;
+
+		// Default to shortest available duration if none selected
+		if (eff.availableDurations.length > 0 && !activeDuration) {
+			activeDuration = Math.min(...eff.availableDurations);
+			onDurationChange?.(activeDuration);
+		}
+
+		regenerateSlots(dateValue);
+	}
+
+	function regenerateSlots(dateValue: string) {
+		if (!cachedEff || !cachedEff.available || cachedEff.availableDurations.length === 0) {
+			availabilitySlots = [];
+			return;
+		}
+
+		const dur = activeDuration || cachedEff.availableDurations[0];
+		availabilitySlots = getAvailableStartTimes(
 			dateValue,
-			duration,
-			eff.operatingStart,
-			eff.operatingEnd,
-			bookings ?? [],
+			dur,
+			cachedEff.operatingStart,
+			cachedEff.operatingEnd,
+			cachedBookings,
 			item.quantity,
-			eff.bufferMinutes,
-			enforcedSlots
+			cachedEff.bufferMinutes,
+			cachedEnforcedSlots,
+			cachedEff.slotIntervalMinutes
 		);
+	}
+
+	function pickDuration(dur: number) {
+		activeDuration = dur;
+		onDurationChange?.(dur);
+		if (availabilityDate) {
+			regenerateSlots(availabilityDate);
+			// Clear selected time only if it's no longer available
+			if (availabilityTime && !availabilitySlots.includes(availabilityTime)) {
+				availabilityTime = '';
+				onTimeSelect?.('');
+			}
+		}
 	}
 
 	const calendarDays = $derived.by(() => {
@@ -213,9 +249,6 @@
 		});
 	}
 
-	function openAvailabilityCalendar() {
-		showCustomCalendar = true;
-	}
 </script>
 
 <div class="boat-details">
@@ -243,9 +276,24 @@
 					<span class="schedule-label">DEPARTURE</span>
 					<span class="schedule-value">{booking.time ? formatTimeDisplay(booking.time) : 'Choose time below'}</span>
 				</div>
-				<div class="schedule-item">
+				<div class="schedule-item schedule-item-duration">
 					<span class="schedule-label">DURATION</span>
-					<span class="schedule-value">{booking.duration} hours</span>
+					{#if cachedEff && cachedEff.availableDurations.length > 1}
+						<div class="duration-options">
+							{#each [...cachedEff.availableDurations].sort((a, b) => a - b) as dur (dur)}
+								<button
+									type="button"
+									class="duration-option"
+									class:selected={dur === activeDuration}
+									onclick={() => pickDuration(dur)}
+								>
+									{formatDurationShort(dur)}
+								</button>
+							{/each}
+						</div>
+					{:else}
+						<span class="schedule-value">{activeDuration ? formatDurationShort(activeDuration) : formatDurationShort(booking.duration)}</span>
+					{/if}
 				</div>
 				<div class="schedule-item">
 					<span class="schedule-label">GUESTS</span>
@@ -253,15 +301,13 @@
 				</div>
 			</div>
 
-			<button type="button" class="change-button" onclick={openAvailabilityCalendar}>Change</button>
 		</div>
 	</div>
 
-	{#if showCustomCalendar}
-		<div class="availability-card">
+	<div class="availability-card">
 			<div class="availability-header">
 				<h3 class="availability-title">Custom Availability Calendar</h3>
-				<p class="availability-subtitle">Pick your date and a departure time for this boat.</p>
+				<p class="availability-subtitle">Pick your date, duration, and departure time for this boat.</p>
 			</div>
 
 			<div class="calendar-shell">
@@ -327,7 +373,6 @@
 				{/if}
 			</div>
 		</div>
-	{/if}
 
 	<div class="amenities-section">
 		<h3 class="amenities-title">Included Amenities</h3>
@@ -451,22 +496,6 @@
 		color: var(--color-text-primary);
 	}
 
-	.change-button {
-		margin-top: var(--space-3);
-		padding: 0;
-		background: none;
-		border: none;
-		color: var(--color-accent-primary);
-		font-family: var(--font-family-system);
-		font-size: var(--font-size-xs);
-		font-weight: var(--font-weight-semibold);
-		cursor: pointer;
-	}
-
-	.change-button:hover {
-		text-decoration: underline;
-	}
-
 	.availability-card {
 		background-color: var(--color-bg-elevated);
 		border: 1px solid var(--color-border-subtle);
@@ -582,6 +611,42 @@
 	.calendar-day:disabled {
 		cursor: not-allowed;
 		opacity: var(--state-disabled-opacity);
+	}
+
+	.schedule-item-duration {
+		grid-column: span 1;
+	}
+
+	.duration-options {
+		display: flex;
+		gap: 4px;
+		flex-wrap: wrap;
+		justify-content: center;
+	}
+
+	.duration-option {
+		padding: 2px 8px;
+		font-family: var(--font-family-system);
+		font-size: 11px;
+		font-weight: var(--font-weight-medium);
+		color: var(--color-text-secondary);
+		background: none;
+		border: 1px solid var(--color-border-default);
+		border-radius: var(--radius-full);
+		cursor: pointer;
+		transition: all var(--motion-duration-fast) var(--motion-ease-standard);
+	}
+
+	.duration-option:hover {
+		border-color: var(--color-accent-primary);
+		color: var(--color-accent-primary);
+	}
+
+	.duration-option.selected {
+		border-color: var(--color-accent-primary);
+		background-color: var(--color-accent-primary);
+		color: var(--color-text-inverse);
+		font-weight: var(--font-weight-semibold);
 	}
 
 	.time-slots {
