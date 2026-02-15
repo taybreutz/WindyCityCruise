@@ -1,5 +1,13 @@
 <script lang="ts">
-	interface Boat {
+	import type { SupabaseClient } from '@supabase/supabase-js';
+	import type { Item } from '$lib/types/database';
+	import {
+		getEffectiveAvailability,
+		getAvailableStartTimes,
+		formatTimeDisplay
+	} from '$lib/availability';
+
+	interface SelectedBoat {
 		id: string;
 		name: string;
 		type: string;
@@ -7,91 +15,114 @@
 		capacity: number;
 		rate: number;
 		tier: string;
+		item: Item;
 	}
 
 	interface Props {
+		items: Item[];
+		supabase: SupabaseClient;
+		orgId: string;
 		selectedBoatId: string;
 		selectedDate: string;
-		onSelectByBoat: (boat: Boat) => void;
-		onSelectByDate: (boat: Boat, date: string, time: string) => void;
+		onSelectByBoat: (boat: SelectedBoat) => void;
+		onSelectByDate: (boat: SelectedBoat, date: string, time: string) => void;
 	}
 
-	let { selectedBoatId, selectedDate, onSelectByBoat, onSelectByDate }: Props = $props();
+	let { items, supabase, orgId, selectedBoatId, selectedDate, onSelectByBoat, onSelectByDate }: Props = $props();
 
 	let date = $state('');
+	let loadingSlots = $state<Record<string, boolean>>({});
+	let slotsMap = $state<Record<string, string[]>>({});
 
 	$effect(() => {
 		date = selectedDate ?? '';
 	});
 
-	const boats: Boat[] = [
-		{
-			id: '33-rinker',
-			name: "33' Rinker Fiesta Vee",
-			type: 'Sport Cruiser',
-			image:
-				'https://chicagoboatinghub.com/cdn/shop/files/33_Rinker_Fiesta_Vee_f8cd916e-85bc-481a-ab10-0f89d378431f.png?v=1709595569&width=3840',
-			capacity: 10,
-			rate: 200,
-			tier: 'Sport'
-		},
-		{
-			id: '37-sea-ray',
-			name: "37' Sea Ray Sundancer",
-			type: 'Sport Cruiser',
-			image: 'https://chicagoboatinghub.com/cdn/shop/files/1.jpg?v=1709597983&width=3840',
-			capacity: 12,
-			rate: 262.5,
-			tier: 'Sport'
-		},
-		{
-			id: '46-sea-ray',
-			name: "46' Sea Ray Express",
-			type: 'Premium Yacht',
-			image:
-				'https://chicagoboatinghub.com/cdn/shop/files/1_e454cb2e-4054-48a2-b88c-a05bfd3b530a.jpg?v=1709601158&width=3840',
-			capacity: 15,
-			rate: 325,
-			tier: 'Premium'
-		},
-		{
-			id: '50-sea-ray',
-			name: "50' Sea Ray Sundancer",
-			type: 'Premium Yacht',
-			image: 'https://chicagoboatinghub.com/cdn/shop/files/Copy_of_1.jpg?v=1709601859&width=3840',
-			capacity: 18,
-			rate: 275,
-			tier: 'Premium'
-		},
-		{
-			id: '55-sea-ray',
-			name: "55' Sea Ray Sundancer",
-			type: 'Luxe Yacht',
-			image:
-				'https://chicagoboatinghub.com/cdn/shop/files/393068.5f37d0254c05527fce4a49ac.xl.jpg?v=1709602387&width=3840',
-			capacity: 20,
-			rate: 337.5,
-			tier: 'Luxe'
-		},
-		{
-			id: '70-sea-ray',
-			name: "70' Sea Ray Sun Sport",
-			type: 'Luxe Yacht',
-			image: 'https://chicagoboatinghub.com/cdn/shop/files/1_1.jpg?v=1709603806&width=3840',
-			capacity: 25,
-			rate: 387.5,
-			tier: 'Luxe'
-		}
-	];
-
 	const hasDate = $derived(Boolean(date));
 	const minDate = new Date().toISOString().split('T')[0];
-	const testTimeSlots = ['10AM', '2:45PM', '7:30PM'];
 
-	function getAvailableTimes(_boatId: string, dateValue: string): string[] {
-		if (!dateValue) return [];
-		return testTimeSlots;
+	function toSelectedBoat(item: Item): SelectedBoat {
+		return {
+			id: item.id,
+			name: item.name,
+			type: item.tier,
+			image: item.image_url ?? '',
+			capacity: item.capacity,
+			rate: item.hourly_rate,
+			tier: item.tier,
+			item
+		};
 	}
+
+	async function fetchAvailability(item: Item, dateValue: string): Promise<string[]> {
+		const [
+			{ data: itemSeasons },
+			{ data: seasonTemplates },
+			{ data: pricingRules },
+			{ data: overrides },
+			{ data: bookings }
+		] = await Promise.all([
+			supabase.from('item_seasons').select('*').eq('item_id', item.id),
+			supabase.from('season_templates').select('*').eq('org_id', orgId).eq('is_active', true),
+			supabase.from('pricing_rules').select('*').eq('org_id', orgId),
+			supabase.from('item_date_overrides').select('*').eq('item_id', item.id).eq('override_date', dateValue),
+			supabase.from('bookings').select('*').eq('item_id', item.id).eq('trip_date', dateValue).neq('status', 'cancelled')
+		]);
+
+		const override = overrides?.[0] ?? null;
+
+		const eff = getEffectiveAvailability(
+			item,
+			itemSeasons ?? [],
+			seasonTemplates ?? [],
+			pricingRules ?? [],
+			override,
+			dateValue
+		);
+
+		if (!eff.available || eff.availableDurations.length === 0) return [];
+
+		// Check for enforced slots from date override
+		let enforcedSlots: string[] = [];
+		if (override?.override_group_id) {
+			const { data: overrideSlots } = await supabase
+				.from('item_date_override_slots')
+				.select('start_time')
+				.eq('item_id', item.id)
+				.eq('override_date', dateValue);
+			enforcedSlots = (overrideSlots ?? []).map((s) => s.start_time);
+		}
+
+		const duration = eff.availableDurations[0];
+		return getAvailableStartTimes(
+			dateValue,
+			duration,
+			eff.operatingStart,
+			eff.operatingEnd,
+			bookings ?? [],
+			item.quantity,
+			eff.bufferMinutes,
+			enforcedSlots
+		);
+	}
+
+	$effect(() => {
+		if (!date) {
+			slotsMap = {};
+			return;
+		}
+
+		const currentDate = date;
+		slotsMap = {};
+
+		for (const item of items) {
+			loadingSlots[item.id] = true;
+			fetchAvailability(item, currentDate).then((slots) => {
+				slotsMap[item.id] = slots;
+				loadingSlots[item.id] = false;
+			});
+		}
+	});
 
 	function formatDate(dateValue: string): string {
 		if (!dateValue) return '';
@@ -157,35 +188,46 @@
 		<div class="passenger-badge">Up to 13 passengers</div>
 
 		<div class="boats-grid">
-			{#each boats as boat}
-				<article class="boat-card" class:selected={selectedBoatId === boat.id}>
+			{#each items as item (item.id)}
+				{@const boat = toSelectedBoat(item)}
+				<article class="boat-card" class:selected={selectedBoatId === item.id}>
 					<div class="boat-image-container">
-						<img src={boat.image} alt={boat.name} class="boat-image" />
-						<span class="boat-tier">{boat.tier}</span>
+						{#if item.image_url}
+							<img src={item.image_url} alt={item.name} class="boat-image" />
+						{:else}
+							<div class="boat-image-placeholder"></div>
+						{/if}
+						<span class="boat-tier">{item.tier}</span>
 					</div>
 
 					<div class="boat-info">
 						<div>
-							<h3 class="boat-name">{boat.name}</h3>
-							<p class="boat-meta">{boat.type} · Up to {boat.capacity} guests</p>
+							<h3 class="boat-name">{item.name}</h3>
+							<p class="boat-meta">{item.tier} · Up to {item.capacity} guests</p>
 						</div>
-						<p class="boat-rate">${boat.rate}<span>/hour</span></p>
+						<p class="boat-rate">${item.hourly_rate}<span>/hour</span></p>
 					</div>
 
 					{#if hasDate}
 						<div class="slots-section">
-							<p class="slots-label">Available Times</p>
-							<div class="slots-grid">
-								{#each getAvailableTimes(boat.id, date) as slot}
-									<button
-										type="button"
-										class="slot-button"
-										onclick={() => onSelectByDate(boat, date, slot)}
-									>
-										{slot}
-									</button>
-								{/each}
-							</div>
+							{#if loadingSlots[item.id]}
+								<p class="slots-label">Loading availability...</p>
+							{:else if (slotsMap[item.id] ?? []).length === 0}
+								<p class="slots-label slots-none">No availability</p>
+							{:else}
+								<p class="slots-label">Available Times</p>
+								<div class="slots-grid">
+									{#each slotsMap[item.id] ?? [] as slot (slot)}
+										<button
+											type="button"
+											class="slot-button"
+											onclick={() => onSelectByDate(boat, date, slot)}
+										>
+											{formatTimeDisplay(slot)}
+										</button>
+									{/each}
+								</div>
+							{/if}
 						</div>
 					{:else}
 						<div class="boat-action">
@@ -362,6 +404,12 @@
 		object-fit: cover;
 	}
 
+	.boat-image-placeholder {
+		width: 100%;
+		height: 100%;
+		background-color: var(--color-bg-secondary);
+	}
+
 	.boat-tier {
 		position: absolute;
 		top: var(--space-2);
@@ -426,6 +474,11 @@
 		font-size: var(--font-size-xs);
 		font-weight: var(--font-weight-medium);
 		color: var(--color-text-secondary);
+	}
+
+	.slots-none {
+		color: var(--color-text-tertiary);
+		font-style: italic;
 	}
 
 	.slots-grid {

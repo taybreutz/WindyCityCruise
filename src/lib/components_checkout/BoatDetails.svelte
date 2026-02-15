@@ -1,4 +1,12 @@
 <script lang="ts">
+	import type { SupabaseClient } from '@supabase/supabase-js';
+	import type { Item } from '$lib/types/database';
+	import {
+		getEffectiveAvailability,
+		getAvailableStartTimes,
+		formatTimeDisplay
+	} from '$lib/availability';
+
 	interface BookingData {
 		boatName: string;
 		boatType: string;
@@ -17,6 +25,9 @@
 		selectedTime?: string;
 		onDateChange?: (date: string) => void;
 		onTimeSelect?: (time: string) => void;
+		supabase: SupabaseClient;
+		orgId: string;
+		item: Item;
 	}
 
 	let {
@@ -25,7 +36,10 @@
 		selectedDate = '',
 		selectedTime = '',
 		onDateChange,
-		onTimeSelect
+		onTimeSelect,
+		supabase,
+		orgId,
+		item
 	}: Props = $props();
 
 	const amenities = [
@@ -38,6 +52,7 @@
 	const weekdayLabels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 	const todayIso = new Date().toISOString().split('T')[0];
 	let showCustomCalendar = $state(false);
+	let loadingSlots = $state(false);
 
 	function parseIsoDate(value: string): Date | null {
 		if (!value) return null;
@@ -56,6 +71,7 @@
 	let calendarMonth = $state(new Date(today.getFullYear(), today.getMonth(), 1));
 	let availabilityDate = $state('');
 	let availabilityTime = $state('');
+	let availabilitySlots = $state<string[]>([]);
 
 	$effect(() => {
 		availabilityDate = selectedDate;
@@ -71,6 +87,71 @@
 			showCustomCalendar = true;
 		}
 	});
+
+	// Fetch real availability when date changes
+	$effect(() => {
+		if (!availabilityDate) {
+			availabilitySlots = [];
+			return;
+		}
+
+		loadingSlots = true;
+		fetchAvailabilitySlots(availabilityDate).then((slots) => {
+			availabilitySlots = slots;
+			loadingSlots = false;
+		});
+	});
+
+	async function fetchAvailabilitySlots(dateValue: string): Promise<string[]> {
+		const [
+			{ data: itemSeasons },
+			{ data: seasonTemplates },
+			{ data: pricingRules },
+			{ data: overrides },
+			{ data: bookings }
+		] = await Promise.all([
+			supabase.from('item_seasons').select('*').eq('item_id', item.id),
+			supabase.from('season_templates').select('*').eq('org_id', orgId).eq('is_active', true),
+			supabase.from('pricing_rules').select('*').eq('org_id', orgId),
+			supabase.from('item_date_overrides').select('*').eq('item_id', item.id).eq('override_date', dateValue),
+			supabase.from('bookings').select('*').eq('item_id', item.id).eq('trip_date', dateValue).neq('status', 'cancelled')
+		]);
+
+		const override = overrides?.[0] ?? null;
+
+		const eff = getEffectiveAvailability(
+			item,
+			itemSeasons ?? [],
+			seasonTemplates ?? [],
+			pricingRules ?? [],
+			override,
+			dateValue
+		);
+
+		if (!eff.available || eff.availableDurations.length === 0) return [];
+
+		let enforcedSlots: string[] = [];
+		if (override?.override_group_id) {
+			const { data: overrideSlots } = await supabase
+				.from('item_date_override_slots')
+				.select('start_time')
+				.eq('item_id', item.id)
+				.eq('override_date', dateValue);
+			enforcedSlots = (overrideSlots ?? []).map((s) => s.start_time);
+		}
+
+		const duration = eff.availableDurations[0];
+		return getAvailableStartTimes(
+			dateValue,
+			duration,
+			eff.operatingStart,
+			eff.operatingEnd,
+			bookings ?? [],
+			item.quantity,
+			eff.bufferMinutes,
+			enforcedSlots
+		);
+	}
 
 	const calendarDays = $derived.by(() => {
 		const year = calendarMonth.getFullYear();
@@ -98,25 +179,6 @@
 			month: 'long',
 			year: 'numeric'
 		})
-	);
-
-	function seedFrom(value: string): number {
-		let seed = 0;
-		for (let i = 0; i < value.length; i += 1) {
-			seed = (seed * 33 + value.charCodeAt(i)) % 2147483647;
-		}
-		return seed;
-	}
-
-	function getAvailabilitySlots(date: string): string[] {
-		const pool = ['9:30 AM', '11:00 AM', '12:30 PM', '2:00 PM', '4:30 PM', '6:00 PM'];
-		const seed = seedFrom(`${booking.boatName}-${date}`);
-		const rotated = [...pool.slice(seed % pool.length), ...pool.slice(0, seed % pool.length)];
-		return rotated.slice(0, 4);
-	}
-
-	const availabilitySlots = $derived.by(() =>
-		availabilityDate ? getAvailabilitySlots(availabilityDate) : []
 	);
 
 	function goToPreviousMonth() {
@@ -179,7 +241,7 @@
 				</div>
 				<div class="schedule-item">
 					<span class="schedule-label">DEPARTURE</span>
-					<span class="schedule-value">{booking.time || 'Choose time below'}</span>
+					<span class="schedule-value">{booking.time ? formatTimeDisplay(booking.time) : 'Choose time below'}</span>
 				</div>
 				<div class="schedule-item">
 					<span class="schedule-label">DURATION</span>
@@ -218,13 +280,13 @@
 				</div>
 
 				<div class="weekday-row">
-					{#each weekdayLabels as weekday}
+					{#each weekdayLabels as weekday (weekday)}
 						<span class="weekday-label">{weekday}</span>
 					{/each}
 				</div>
 
 				<div class="calendar-grid">
-					{#each calendarDays as day}
+					{#each calendarDays as day (day.iso)}
 						<button
 							type="button"
 							class="calendar-day"
@@ -241,19 +303,25 @@
 
 			<div class="time-slots">
 				{#if availabilityDate}
-					<p class="time-slots-label">Available on {formatAvailabilityDate(availabilityDate)}</p>
-					<div class="time-slots-grid">
-						{#each availabilitySlots as slot}
-							<button
-								type="button"
-								class="time-slot"
-								class:selected={slot === availabilityTime}
-								onclick={() => selectTime(slot)}
-							>
-								{slot}
-							</button>
-						{/each}
-					</div>
+					{#if loadingSlots}
+						<p class="time-slots-label">Loading availability...</p>
+					{:else if availabilitySlots.length === 0}
+						<p class="time-slots-label">No availability on {formatAvailabilityDate(availabilityDate)}</p>
+					{:else}
+						<p class="time-slots-label">Available on {formatAvailabilityDate(availabilityDate)}</p>
+						<div class="time-slots-grid">
+							{#each availabilitySlots as slot (slot)}
+								<button
+									type="button"
+									class="time-slot"
+									class:selected={slot === availabilityTime}
+									onclick={() => selectTime(slot)}
+								>
+									{formatTimeDisplay(slot)}
+								</button>
+							{/each}
+						</div>
+					{/if}
 				{:else}
 					<p class="time-slots-placeholder">Select a date to see available departure times.</p>
 				{/if}
@@ -264,7 +332,7 @@
 	<div class="amenities-section">
 		<h3 class="amenities-title">Included Amenities</h3>
 		<div class="amenities-grid">
-			{#each amenities as amenity}
+			{#each amenities as amenity (amenity.label)}
 				<div class="amenity-item">
 					<div class="amenity-icon">
 						<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">

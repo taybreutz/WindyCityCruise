@@ -5,6 +5,11 @@
 	import BoatDetails from '$lib/components_checkout/BoatDetails.svelte';
 	import GuestPaymentForm from '$lib/components_checkout/GuestPaymentForm.svelte';
 	import BookingConfirmation from '$lib/components_checkout/BookingConfirmation.svelte';
+	import { supabase } from '$lib/supabase';
+	import type { Item } from '$lib/types/database';
+	import { formatTimeDisplay } from '$lib/availability';
+
+	let { data } = $props();
 
 	type SelectedBoat = {
 		id: string;
@@ -14,6 +19,7 @@
 		capacity: number;
 		rate: number;
 		tier: string;
+		item: Item;
 	};
 
 	// Internal flow:
@@ -135,12 +141,15 @@
 			{#if currentStep === 1}
 				{#if substep === 'select'}
 					<BoatSelector
+						items={data.items}
+						{supabase}
+						orgId={data.orgId}
 						selectedBoatId={selectedBoat?.id || ''}
 						selectedDate={selectionMethod === 'date' ? tripDate : ''}
 						onSelectByBoat={handleSelectByBoat}
 						onSelectByDate={handleSelectByDate}
 					/>
-				{:else if substep === 'review' && bookingData}
+				{:else if substep === 'review' && bookingData && selectedBoat}
 					<div class="back-nav">
 						<button class="back-link" onclick={goBackToSelect}>
 							<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -157,6 +166,9 @@
 						selectedTime={tripTime}
 						onDateChange={handleAvailabilityDateChange}
 						onTimeSelect={handleAvailabilityTimeSelect}
+						{supabase}
+						orgId={data.orgId}
+						item={selectedBoat.item}
 					/>
 				{/if}
 			{:else if currentStep === 2}
