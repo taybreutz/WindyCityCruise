@@ -28,18 +28,100 @@
 		onSelectByDate: (boat: SelectedBoat, date: string, time: string) => void;
 	}
 
-	let { items, supabase, orgId, selectedBoatId, selectedDate, onSelectByBoat, onSelectByDate }: Props = $props();
+	let {
+		items,
+		supabase,
+		orgId,
+		selectedBoatId,
+		selectedDate,
+		onSelectByBoat,
+		onSelectByDate
+	}: Props = $props();
 
+	const weekdayLabels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 	let date = $state('');
+	let showCustomCalendar = $state(false);
 	let loadingSlots = $state<Record<string, boolean>>({});
 	let slotsMap = $state<Record<string, string[]>>({});
+	let calendarMonth = $state(new Date());
+	let datePickerElement: HTMLDivElement | null = null;
+
+	function parseIsoDate(value: string): Date | null {
+		if (!value) return null;
+		const parsed = new Date(`${value}T00:00:00`);
+		return Number.isNaN(parsed.getTime()) ? null : parsed;
+	}
+
+	function toIsoDate(value: Date): string {
+		const year = value.getFullYear();
+		const month = String(value.getMonth() + 1).padStart(2, '0');
+		const day = String(value.getDate()).padStart(2, '0');
+		return `${year}-${month}-${day}`;
+	}
+
+	const today = new Date();
+	const todayIso = toIsoDate(today);
+	const hasDate = $derived(Boolean(date));
+	const monthLabel = $derived(
+		calendarMonth.toLocaleDateString('en-US', {
+			month: 'long',
+			year: 'numeric'
+		})
+	);
+	const canGoToPreviousMonth = $derived(
+		calendarMonth.getFullYear() > today.getFullYear() ||
+			(calendarMonth.getFullYear() === today.getFullYear() &&
+				calendarMonth.getMonth() > today.getMonth())
+	);
+	const calendarDays = $derived.by(() => {
+		const year = calendarMonth.getFullYear();
+		const month = calendarMonth.getMonth();
+		const firstDay = new Date(year, month, 1);
+		const startOffset = firstDay.getDay();
+		const gridStart = new Date(year, month, 1 - startOffset);
+
+		return Array.from({ length: 42 }, (_, index) => {
+			const day = new Date(gridStart);
+			day.setDate(gridStart.getDate() + index);
+			const iso = toIsoDate(day);
+			return {
+				iso,
+				label: day.getDate(),
+				isCurrentMonth: day.getMonth() === month,
+				isPast: iso < todayIso,
+				isSelected: iso === date
+			};
+		});
+	});
 
 	$effect(() => {
 		date = selectedDate ?? '';
+		const parsed = parseIsoDate(selectedDate);
+		if (parsed) {
+			calendarMonth = new Date(parsed.getFullYear(), parsed.getMonth(), 1);
+		} else {
+			calendarMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+		}
 	});
 
-	const hasDate = $derived(Boolean(date));
-	const minDate = new Date().toISOString().split('T')[0];
+	$effect(() => {
+		if (!showCustomCalendar) return;
+
+		const handlePointerDown = (event: PointerEvent) => {
+			if (
+				datePickerElement &&
+				event.target instanceof Node &&
+				!datePickerElement.contains(event.target)
+			) {
+				showCustomCalendar = false;
+			}
+		};
+
+		document.addEventListener('pointerdown', handlePointerDown);
+		return () => {
+			document.removeEventListener('pointerdown', handlePointerDown);
+		};
+	});
 
 	function toSelectedBoat(item: Item): SelectedBoat {
 		return {
@@ -65,8 +147,17 @@
 			supabase.from('item_seasons').select('*').eq('item_id', item.id),
 			supabase.from('season_templates').select('*').eq('org_id', orgId).eq('is_active', true),
 			supabase.from('pricing_rules').select('*').eq('org_id', orgId),
-			supabase.from('item_date_overrides').select('*').eq('item_id', item.id).eq('override_date', dateValue),
-			supabase.from('bookings').select('*').eq('item_id', item.id).eq('trip_date', dateValue).neq('status', 'cancelled')
+			supabase
+				.from('item_date_overrides')
+				.select('*')
+				.eq('item_id', item.id)
+				.eq('override_date', dateValue),
+			supabase
+				.from('bookings')
+				.select('*')
+				.eq('item_id', item.id)
+				.eq('trip_date', dateValue)
+				.neq('status', 'cancelled')
 		]);
 
 		const override = overrides?.[0] ?? null;
@@ -137,6 +228,26 @@
 
 	function clearDate() {
 		date = '';
+		showCustomCalendar = false;
+	}
+
+	function openDateCalendar() {
+		showCustomCalendar = true;
+	}
+
+	function goToPreviousMonth() {
+		if (!canGoToPreviousMonth) return;
+		calendarMonth = new Date(calendarMonth.getFullYear(), calendarMonth.getMonth() - 1, 1);
+	}
+
+	function goToNextMonth() {
+		calendarMonth = new Date(calendarMonth.getFullYear(), calendarMonth.getMonth() + 1, 1);
+	}
+
+	function selectDate(iso: string, disabled: boolean) {
+		if (disabled) return;
+		date = iso;
+		showCustomCalendar = false;
 	}
 </script>
 
@@ -156,9 +267,79 @@
 						<line x1="8" y1="2" x2="8" y2="6" />
 						<line x1="3" y1="10" x2="21" y2="10" />
 					</svg>
-					Date
+					Select Date
 				</label>
-				<input type="date" id="trip-date" class="config-input" bind:value={date} min={minDate} />
+				<div class="date-picker" bind:this={datePickerElement}>
+					<button
+						type="button"
+						id="trip-date"
+						class="config-input custom-date-trigger"
+						onclick={openDateCalendar}
+						aria-haspopup="dialog"
+						aria-expanded={showCustomCalendar}
+					>
+						<span>{hasDate ? formatDate(date) : 'Select date'}</span>
+						<svg
+							viewBox="0 0 24 24"
+							fill="none"
+							stroke="currentColor"
+							stroke-width="2"
+							aria-hidden="true"
+						>
+							<polyline points="6 9 12 15 18 9" />
+						</svg>
+					</button>
+
+					{#if showCustomCalendar}
+						<div class="custom-calendar" role="dialog" aria-label="Date picker calendar">
+							<div class="calendar-header">
+								<button
+									type="button"
+									class="calendar-nav"
+									onclick={goToPreviousMonth}
+									disabled={!canGoToPreviousMonth}
+									aria-label="Previous month"
+								>
+									<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+										<polyline points="15 18 9 12 15 6" />
+									</svg>
+								</button>
+								<span class="calendar-month">{monthLabel}</span>
+								<button
+									type="button"
+									class="calendar-nav"
+									onclick={goToNextMonth}
+									aria-label="Next month"
+								>
+									<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+										<polyline points="9 18 15 12 9 6" />
+									</svg>
+								</button>
+							</div>
+
+							<div class="weekday-row">
+								{#each weekdayLabels as weekday (weekday)}
+									<span class="weekday-label">{weekday}</span>
+								{/each}
+							</div>
+
+							<div class="calendar-grid">
+								{#each calendarDays as day (day.iso)}
+									<button
+										type="button"
+										class="calendar-day"
+										class:outside={!day.isCurrentMonth}
+										class:selected={day.isSelected}
+										disabled={day.isPast}
+										onclick={() => selectDate(day.iso, day.isPast)}
+									>
+										{day.label}
+									</button>
+								{/each}
+							</div>
+						</div>
+					{/if}
+				</div>
 			</div>
 
 			{#if hasDate}
@@ -167,9 +348,7 @@
 					<button type="button" class="clear-date" onclick={clearDate}>Clear</button>
 				</div>
 			{:else}
-				<p class="date-hint">
-					Skip date search to jump directly to step 2 by selecting a boat on the right.
-				</p>
+				<p class="date-hint"></p>
 			{/if}
 		</div>
 	</aside>
@@ -319,6 +498,121 @@
 		border-color: var(--color-accent-primary);
 	}
 
+	.date-picker {
+		position: relative;
+	}
+
+	.custom-date-trigger {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: var(--space-2);
+		text-align: left;
+	}
+
+	.custom-date-trigger svg {
+		width: 16px;
+		height: 16px;
+		color: var(--color-text-tertiary);
+		flex-shrink: 0;
+	}
+
+	.custom-calendar {
+		margin-top: var(--space-2);
+		padding: var(--space-3);
+		background-color: var(--color-bg-primary);
+		border: 1px solid var(--color-border-default);
+		border-radius: var(--radius-sm);
+	}
+
+	.calendar-header {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		margin-bottom: var(--space-2);
+	}
+
+	.calendar-month {
+		font-family: var(--font-family-system);
+		font-size: var(--font-size-sm);
+		font-weight: var(--font-weight-medium);
+		color: var(--color-text-primary);
+	}
+
+	.calendar-nav {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 28px;
+		height: 28px;
+		border: 1px solid var(--color-border-default);
+		border-radius: var(--radius-sm);
+		background-color: var(--color-bg-primary);
+		color: var(--color-text-primary);
+		cursor: pointer;
+	}
+
+	.calendar-nav:disabled {
+		opacity: var(--state-disabled-opacity);
+		cursor: not-allowed;
+	}
+
+	.calendar-nav svg {
+		width: 16px;
+		height: 16px;
+	}
+
+	.weekday-row {
+		display: grid;
+		grid-template-columns: repeat(7, 1fr);
+		margin-bottom: 6px;
+	}
+
+	.weekday-label {
+		text-align: center;
+		font-family: var(--font-family-system);
+		font-size: 11px;
+		color: var(--color-text-tertiary);
+	}
+
+	.calendar-grid {
+		display: grid;
+		grid-template-columns: repeat(7, 1fr);
+		gap: 6px;
+	}
+
+	.calendar-day {
+		height: 34px;
+		border: 1px solid var(--color-border-default);
+		border-radius: var(--radius-sm);
+		background-color: var(--color-bg-primary);
+		color: var(--color-text-primary);
+		font-family: var(--font-family-system);
+		font-size: var(--font-size-xs);
+		font-weight: var(--font-weight-medium);
+		cursor: pointer;
+	}
+
+	.calendar-day:hover:not(:disabled) {
+		border-color: var(--color-accent-primary);
+	}
+
+	.calendar-day.outside {
+		color: var(--color-text-tertiary);
+		background-color: var(--color-bg-secondary);
+	}
+
+	.calendar-day.selected {
+		border-color: var(--color-accent-primary);
+		background-color: var(--color-accent-quiet);
+		color: var(--color-accent-primary);
+	}
+
+	.calendar-day:disabled {
+		opacity: var(--state-disabled-opacity);
+		cursor: not-allowed;
+	}
+
 	.date-chip {
 		display: flex;
 		align-items: center;
@@ -386,10 +680,10 @@
 		overflow: hidden;
 	}
 
-	.boat-card.selected {
+	/* .boat-card.selected {
 		border-color: var(--color-accent-primary);
 		box-shadow: 0 0 0 3px var(--color-accent-muted);
-	}
+	} */
 
 	.boat-image-container {
 		position: relative;
