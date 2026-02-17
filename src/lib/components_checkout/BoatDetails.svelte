@@ -30,6 +30,7 @@
 		onDateChange?: (date: string) => void;
 		onTimeSelect?: (time: string) => void;
 		onDurationChange?: (duration: number) => void;
+		onGuestsChange?: (guests: number) => void;
 		onRateChange?: (rate: number) => void;
 		supabase: SupabaseClient;
 		orgId: string;
@@ -45,6 +46,7 @@
 		onDateChange,
 		onTimeSelect,
 		onDurationChange,
+		onGuestsChange,
 		onRateChange,
 		supabase,
 		orgId,
@@ -280,6 +282,29 @@
 			year: 'numeric'
 		});
 	}
+
+	let calendarShellEl: HTMLDivElement | undefined = $state();
+	let timeSlotsEl: HTMLDivElement | undefined = $state();
+
+	function scrollToCalendar() {
+		calendarShellEl?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+	}
+
+	function scrollToTimeSlots() {
+		timeSlotsEl?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+	}
+
+	function decrementGuests() {
+		if (booking.guests > 1) {
+			onGuestsChange?.(booking.guests - 1);
+		}
+	}
+
+	function incrementGuests() {
+		if (booking.guests < booking.capacity) {
+			onGuestsChange?.(booking.guests + 1);
+		}
+	}
 </script>
 
 <div class="boat-details">
@@ -301,13 +326,11 @@
 			<div class="trip-schedule">
 				<div class="schedule-item">
 					<span class="schedule-label">CHECK-IN</span>
-					<span class="schedule-value">{booking.date || 'Choose date below'}</span>
+					<button type="button" class="schedule-value schedule-link" onclick={scrollToCalendar}>{booking.date || 'Choose date below'}</button>
 				</div>
 				<div class="schedule-item">
 					<span class="schedule-label">DEPARTURE</span>
-					<span class="schedule-value"
-						>{booking.time ? formatTimeDisplay(booking.time) : 'Choose time below'}</span
-					>
+					<button type="button" class="schedule-value schedule-link" onclick={scrollToTimeSlots}>{booking.time ? formatTimeDisplay(booking.time) : 'Choose time below'}</button>
 				</div>
 				<div class="schedule-item schedule-item-duration">
 					<span class="schedule-label">DURATION</span>
@@ -334,7 +357,32 @@
 				</div>
 				<div class="schedule-item">
 					<span class="schedule-label">GUESTS</span>
-					<span class="schedule-value">{booking.guests}</span>
+					<div class="guest-stepper">
+						<button
+							type="button"
+							class="stepper-btn"
+							onclick={decrementGuests}
+							disabled={booking.guests <= 1}
+							aria-label="Decrease guests"
+						>−</button>
+						<select
+							class="stepper-select"
+							value={booking.guests}
+							onchange={(e) => onGuestsChange?.(Number(e.currentTarget.value))}
+							aria-label="Number of guests"
+						>
+							{#each Array.from({ length: booking.capacity }, (_, i) => i + 1) as n (n)}
+								<option value={n}>{n}</option>
+							{/each}
+						</select>
+						<button
+							type="button"
+							class="stepper-btn"
+							onclick={incrementGuests}
+							disabled={booking.guests >= booking.capacity}
+							aria-label="Increase guests"
+						>+</button>
+					</div>
 				</div>
 			</div>
 		</div>
@@ -348,7 +396,7 @@
 			</p>
 		</div>
 
-		<div class="calendar-shell">
+		<div class="calendar-shell" bind:this={calendarShellEl}>
 			<div class="calendar-header">
 				<button
 					type="button"
@@ -390,7 +438,7 @@
 			</div>
 		</div>
 
-		<div class="time-slots">
+		<div class="time-slots" bind:this={timeSlotsEl}>
 			{#if availabilityDate}
 				{#if loadingSlots}
 					<p class="time-slots-label">Loading availability...</p>
@@ -539,6 +587,19 @@
 		font-size: var(--font-size-sm);
 		font-weight: var(--font-weight-semibold);
 		color: var(--color-text-primary);
+	}
+
+	.schedule-link {
+		color: var(--color-accent-primary);
+		text-decoration: underline;
+		background: none;
+		border: none;
+		padding: 0;
+		cursor: pointer;
+	}
+
+	.schedule-link:hover {
+		opacity: var(--state-hover-opacity);
 	}
 
 	.availability-card {
@@ -692,6 +753,60 @@
 		background-color: var(--color-accent-primary);
 		color: var(--color-text-inverse);
 		font-weight: var(--font-weight-semibold);
+	}
+
+	.guest-stepper {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 2px;
+	}
+
+	.stepper-btn {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 24px;
+		height: 24px;
+		font-family: var(--font-family-system);
+		font-size: 14px;
+		font-weight: var(--font-weight-semibold);
+		color: var(--color-text-secondary);
+		background: none;
+		border: 1px solid var(--color-border-default);
+		border-radius: var(--radius-full);
+		cursor: pointer;
+		transition: all var(--motion-duration-fast) var(--motion-ease-standard);
+		line-height: 1;
+	}
+
+	.stepper-btn:hover:not(:disabled) {
+		border-color: var(--color-accent-primary);
+		color: var(--color-accent-primary);
+	}
+
+	.stepper-btn:disabled {
+		opacity: var(--state-disabled-opacity);
+		cursor: not-allowed;
+	}
+
+	.stepper-select {
+		width: 36px;
+		text-align: center;
+		font-family: var(--font-family-system);
+		font-size: var(--font-size-sm);
+		font-weight: var(--font-weight-semibold);
+		color: var(--color-text-primary);
+		background: none;
+		border: none;
+		cursor: pointer;
+		appearance: none;
+		-webkit-appearance: none;
+		padding: 0;
+	}
+
+	.stepper-select:focus {
+		outline: none;
 	}
 
 	.time-slots {

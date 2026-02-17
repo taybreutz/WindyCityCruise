@@ -133,6 +133,10 @@
 		tripDuration = duration;
 	}
 
+	function handleGuestsChange(guests: number) {
+		tripGuests = guests;
+	}
+
 	function handleRateChange(rate: number) {
 		if (selectedBoat) {
 			selectedBoat = { ...selectedBoat, rate };
@@ -180,6 +184,7 @@
 						onDateChange={handleAvailabilityDateChange}
 						onTimeSelect={handleAvailabilityTimeSelect}
 						onDurationChange={handleAvailabilityDurationChange}
+						onGuestsChange={handleGuestsChange}
 						onRateChange={handleRateChange}
 						{supabase}
 						orgId={data.orgId}
