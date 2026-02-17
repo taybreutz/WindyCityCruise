@@ -134,8 +134,17 @@
 			supabase.from('item_seasons').select('*').eq('item_id', item.id),
 			supabase.from('season_templates').select('*').eq('org_id', orgId).eq('is_active', true),
 			supabase.from('pricing_rules').select('*').eq('org_id', orgId),
-			supabase.from('item_date_overrides').select('*').eq('item_id', item.id).eq('override_date', dateValue),
-			supabase.from('bookings').select('*').eq('item_id', item.id).eq('trip_date', dateValue).neq('status', 'cancelled')
+			supabase
+				.from('item_date_overrides')
+				.select('*')
+				.eq('item_id', item.id)
+				.eq('override_date', dateValue),
+			supabase
+				.from('bookings')
+				.select('*')
+				.eq('item_id', item.id)
+				.eq('trip_date', dateValue)
+				.neq('status', 'cancelled')
 		]);
 
 		const override: ItemDateOverride | null = overrides?.[0] ?? null;
@@ -269,7 +278,6 @@
 			year: 'numeric'
 		});
 	}
-
 </script>
 
 <div class="boat-details">
@@ -295,7 +303,9 @@
 				</div>
 				<div class="schedule-item">
 					<span class="schedule-label">DEPARTURE</span>
-					<span class="schedule-value">{booking.time ? formatTimeDisplay(booking.time) : 'Choose time below'}</span>
+					<span class="schedule-value"
+						>{booking.time ? formatTimeDisplay(booking.time) : 'Choose time below'}</span
+					>
 				</div>
 				<div class="schedule-item schedule-item-duration">
 					<span class="schedule-label">DURATION</span>
@@ -313,7 +323,11 @@
 							{/each}
 						</div>
 					{:else}
-						<span class="schedule-value">{activeDuration ? formatDurationShort(activeDuration) : formatDurationShort(booking.duration)}</span>
+						<span class="schedule-value"
+							>{activeDuration
+								? formatDurationShort(activeDuration)
+								: formatDurationShort(booking.duration)}</span
+						>
 					{/if}
 				</div>
 				<div class="schedule-item">
@@ -321,79 +335,87 @@
 					<span class="schedule-value">{booking.guests}</span>
 				</div>
 			</div>
-
 		</div>
 	</div>
 
 	<div class="availability-card">
-			<div class="availability-header">
-				<h3 class="availability-title">Custom Availability Calendar</h3>
-				<p class="availability-subtitle">Pick your date, duration, and departure time for this boat.</p>
+		<div class="availability-header">
+			<h3 class="availability-title">Custom Availability Calendar</h3>
+			<p class="availability-subtitle">
+				Pick your date, duration, and departure time for this boat.
+			</p>
+		</div>
+
+		<div class="calendar-shell">
+			<div class="calendar-header">
+				<button
+					type="button"
+					class="calendar-nav"
+					onclick={goToPreviousMonth}
+					aria-label="Previous month"
+				>
+					<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+						<polyline points="15 18 9 12 15 6" />
+					</svg>
+				</button>
+				<span class="calendar-month">{monthLabel}</span>
+				<button type="button" class="calendar-nav" onclick={goToNextMonth} aria-label="Next month">
+					<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+						<polyline points="9 18 15 12 9 6" />
+					</svg>
+				</button>
 			</div>
 
-			<div class="calendar-shell">
-				<div class="calendar-header">
-					<button type="button" class="calendar-nav" onclick={goToPreviousMonth} aria-label="Previous month">
-						<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-							<polyline points="15 18 9 12 15 6" />
-						</svg>
-					</button>
-					<span class="calendar-month">{monthLabel}</span>
-					<button type="button" class="calendar-nav" onclick={goToNextMonth} aria-label="Next month">
-						<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-							<polyline points="9 18 15 12 9 6" />
-						</svg>
-					</button>
-				</div>
-
-				<div class="weekday-row">
-					{#each weekdayLabels as weekday (weekday)}
-						<span class="weekday-label">{weekday}</span>
-					{/each}
-				</div>
-
-				<div class="calendar-grid">
-					{#each calendarDays as day (day.iso)}
-						<button
-							type="button"
-							class="calendar-day"
-							class:outside={ !day.isCurrentMonth}
-							class:selected={day.isSelected}
-							disabled={day.isPast}
-							onclick={() => selectDate(day.iso, day.isPast)}
-						>
-							{day.label}
-						</button>
-					{/each}
-				</div>
+			<div class="weekday-row">
+				{#each weekdayLabels as weekday (weekday)}
+					<span class="weekday-label">{weekday}</span>
+				{/each}
 			</div>
 
-			<div class="time-slots">
-				{#if availabilityDate}
-					{#if loadingSlots}
-						<p class="time-slots-label">Loading availability...</p>
-					{:else if availabilitySlots.length === 0}
-						<p class="time-slots-label">No availability on {formatAvailabilityDate(availabilityDate)}</p>
-					{:else}
-						<p class="time-slots-label">Available on {formatAvailabilityDate(availabilityDate)}</p>
-						<div class="time-slots-grid">
-							{#each availabilitySlots as slot (slot)}
-								<button
-									type="button"
-									class="time-slot"
-									class:selected={slot === availabilityTime}
-									onclick={() => selectTime(slot)}
-								>
-									{formatTimeDisplay(slot)}
-								</button>
-							{/each}
-						</div>
-					{/if}
-				{:else}
-					<p class="time-slots-placeholder">Select a date to see available departure times.</p>
-				{/if}
+			<div class="calendar-grid">
+				{#each calendarDays as day (day.iso)}
+					<button
+						type="button"
+						class="calendar-day"
+						class:outside={!day.isCurrentMonth}
+						class:selected={day.isSelected}
+						disabled={day.isPast}
+						onclick={() => selectDate(day.iso, day.isPast)}
+					>
+						{day.label}
+					</button>
+				{/each}
 			</div>
 		</div>
+
+		<div class="time-slots">
+			{#if availabilityDate}
+				{#if loadingSlots}
+					<p class="time-slots-label">Loading availability...</p>
+				{:else if availabilitySlots.length === 0}
+					<p class="time-slots-label">
+						No availability on {formatAvailabilityDate(availabilityDate)}
+					</p>
+				{:else}
+					<p class="time-slots-label">Available on {formatAvailabilityDate(availabilityDate)}</p>
+					<div class="time-slots-grid">
+						{#each availabilitySlots as slot (slot)}
+							<button
+								type="button"
+								class="time-slot"
+								class:selected={slot === availabilityTime}
+								onclick={() => selectTime(slot)}
+							>
+								{formatTimeDisplay(slot)}
+							</button>
+						{/each}
+					</div>
+				{/if}
+			{:else}
+				<p class="time-slots-placeholder">Select a date to see available departure times.</p>
+			{/if}
+		</div>
+	</div>
 
 	<div class="amenities-section">
 		<h3 class="amenities-title">Included Amenities</h3>
