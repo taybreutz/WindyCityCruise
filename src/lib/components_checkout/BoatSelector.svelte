@@ -189,8 +189,9 @@
 		}
 
 		itemAvailable[item.id] = true;
-		const shortest = Math.min(...eff.availableDurations);
-		itemShortestDuration[item.id] = shortest;
+		const sorted = [...eff.availableDurations].sort((a, b) => a - b);
+		const shortest = sorted[0];
+		itemShortestDuration[item.id] = sorted[Math.min(1, sorted.length - 1)];
 
 		let enforcedSlots: string[] = [];
 		if (override?.override_group_id) {

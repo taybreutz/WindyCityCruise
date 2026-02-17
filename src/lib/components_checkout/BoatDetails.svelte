@@ -98,9 +98,10 @@
 		availabilityDate = selectedDate;
 		availabilityTime = selectedTime;
 		if (selectedDuration) activeDuration = selectedDuration;
-		// Default to shortest duration if none set yet
+		// Default to second-shortest duration if none set yet
 		if (!activeDuration && initialDurations.length > 0) {
-			activeDuration = Math.min(...initialDurations);
+			const sorted = [...initialDurations].sort((a, b) => a - b);
+			activeDuration = sorted[Math.min(1, sorted.length - 1)];
 			onDurationChange?.(activeDuration);
 		}
 		const parsed = parseIsoDate(selectedDate);
@@ -177,9 +178,10 @@
 			onRateChange?.(eff.hourlyRate);
 		}
 
-		// Default to shortest available duration if none selected
+		// Default to second-shortest available duration if none selected
 		if (eff.availableDurations.length > 0 && !activeDuration) {
-			activeDuration = Math.min(...eff.availableDurations);
+			const sorted = [...eff.availableDurations].sort((a, b) => a - b);
+			activeDuration = sorted[Math.min(1, sorted.length - 1)];
 			onDurationChange?.(activeDuration);
 		}
 
