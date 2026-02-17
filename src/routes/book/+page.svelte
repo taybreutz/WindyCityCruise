@@ -137,6 +137,7 @@
 		tripGuests = guests;
 	}
 
+
 	function handleRateChange(rate: number) {
 		if (selectedBoat) {
 			selectedBoat = { ...selectedBoat, rate };

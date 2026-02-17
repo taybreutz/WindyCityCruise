@@ -22,6 +22,7 @@
 	let { booking, showContactForm = false, onContinue, canContinue = true }: Props = $props();
 
 	let promoCode = $state('');
+	let promoOpen = $state(false);
 	let promoApplied = $state(false);
 	let promoDiscount = $state(0);
 	let contactName = $state('');
@@ -103,22 +104,35 @@
 
 	{#if !promoApplied}
 		<div class="promo-section">
-			<button
-				class="promo-toggle"
-				onclick={() => {
-					const input = document.getElementById('promo-input');
-					if (input) input.classList.toggle('visible');
-				}}
-			>
+			<button type="button" class="promo-toggle" onclick={() => (promoOpen = !promoOpen)}>
+				<svg class="promo-tag-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+					<path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z" />
+					<line x1="7" y1="7" x2="7.01" y2="7" />
+				</svg>
 				Have a promo code?
-				<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+				<svg class="promo-chevron" class:open={promoOpen} viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
 					<polyline points="6 9 12 15 18 9" />
 				</svg>
 			</button>
-			<div id="promo-input" class="promo-input-container">
-				<input type="text" placeholder="Enter code" class="promo-input" bind:value={promoCode} />
-				<button class="promo-apply" onclick={applyPromo}>Apply</button>
-			</div>
+			{#if promoOpen}
+				<div class="promo-input-row">
+					<input
+						type="text"
+						class="promo-input"
+						placeholder="Enter code"
+						bind:value={promoCode}
+					/>
+					<button type="button" class="promo-apply" onclick={applyPromo}>Apply</button>
+				</div>
+			{/if}
+		</div>
+	{:else}
+		<div class="promo-applied">
+			<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+				<path d="M22 11.08V12a10 10 0 11-5.93-9.14" />
+				<polyline points="22 4 12 14.01 9 11.01" />
+			</svg>
+			<span>Promo <strong>{promoCode.toUpperCase()}</strong> applied</span>
 		</div>
 	{/if}
 
@@ -307,9 +321,9 @@
 	}
 
 	.promo-toggle {
-		display: flex;
+		display: inline-flex;
 		align-items: center;
-		gap: var(--space-1);
+		gap: var(--space-2);
 		font-family: var(--font-family-system);
 		font-size: var(--font-size-xs);
 		font-weight: var(--font-weight-medium);
@@ -320,19 +334,29 @@
 		padding: 0;
 	}
 
-	.promo-toggle svg {
+	.promo-toggle:hover {
+		opacity: var(--state-hover-opacity);
+	}
+
+	.promo-tag-icon {
+		width: 14px;
+		height: 14px;
+	}
+
+	.promo-chevron {
 		width: 16px;
 		height: 16px;
+		transition: transform var(--motion-duration-fast) var(--motion-ease-standard);
 	}
 
-	.promo-input-container {
-		display: none;
+	.promo-chevron.open {
+		transform: rotate(180deg);
+	}
+
+	.promo-input-row {
+		display: flex;
 		gap: var(--space-2);
 		margin-top: var(--space-3);
-	}
-
-	.promo-input-container.visible {
-		display: flex;
 	}
 
 	.promo-input {
@@ -342,7 +366,7 @@
 		font-family: var(--font-family-system);
 		font-size: var(--font-size-sm);
 		color: var(--color-text-primary);
-		background-color: var(--color-bg-secondary);
+		background-color: var(--color-bg-primary);
 		border: 1px solid var(--color-border-default);
 		border-radius: var(--radius-sm);
 		outline: none;
@@ -363,11 +387,30 @@
 		border: none;
 		border-radius: var(--radius-sm);
 		cursor: pointer;
-		transition: opacity var(--motion-duration-fast) var(--motion-ease-standard);
 	}
 
 	.promo-apply:hover {
 		opacity: var(--state-hover-opacity);
+	}
+
+	.promo-applied {
+		display: flex;
+		align-items: center;
+		gap: var(--space-2);
+		margin-bottom: var(--space-4);
+		padding: var(--space-2) var(--space-3);
+		background-color: var(--color-accent-quiet);
+		border: 1px solid var(--color-accent-muted);
+		border-radius: var(--radius-md);
+		font-family: var(--font-family-system);
+		font-size: var(--font-size-xs);
+		color: var(--color-accent-primary);
+	}
+
+	.promo-applied svg {
+		width: 16px;
+		height: 16px;
+		flex-shrink: 0;
 	}
 
 	.support-section {
