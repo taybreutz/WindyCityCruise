@@ -29,10 +29,12 @@
 	});
 
 	let mapContainer = $state<HTMLDivElement | undefined>(undefined);
+	let mapShell = $state<HTMLDivElement | undefined>(undefined);
 	let map: any = null;
 	let mapboxgl: any = null;
 	let stayMarker: any = null;
 	let boatMarkers: any[] = [];
+	let chicagoOverlayOpacity = $state(1);
 
 	let mapReady = $state(false);
 	let geocoding = $state(false);
@@ -482,6 +484,40 @@
 
 		plotStayMarker();
 	});
+
+	$effect(() => {
+		if (typeof window === 'undefined' || !mapShell) {
+			return;
+		}
+
+		const shell = mapShell;
+		let rafId = 0;
+
+		const updateOverlayOpacity = () => {
+			const rect = shell.getBoundingClientRect();
+			const viewportHeight = window.innerHeight || 1;
+			const fadeStart = viewportHeight * 0.72;
+			const fadeEnd = viewportHeight * 0.12;
+			const rawProgress = (fadeStart - rect.top) / (fadeStart - fadeEnd);
+			const clampedProgress = Math.max(0, Math.min(1, rawProgress));
+			chicagoOverlayOpacity = 1 - clampedProgress;
+		};
+
+		const handleScroll = () => {
+			cancelAnimationFrame(rafId);
+			rafId = requestAnimationFrame(updateOverlayOpacity);
+		};
+
+		updateOverlayOpacity();
+		window.addEventListener('scroll', handleScroll, { passive: true });
+		window.addEventListener('resize', handleScroll);
+
+		return () => {
+			cancelAnimationFrame(rafId);
+			window.removeEventListener('scroll', handleScroll);
+			window.removeEventListener('resize', handleScroll);
+		};
+	});
 </script>
 
 <section class="find-boat-map-section">
@@ -703,7 +739,7 @@
 			{/if}
 		</div>
 
-		<div class="map-shell">
+		<div class="map-shell" bind:this={mapShell}>
 			{#if mapError}
 				<div class="map-fallback">
 					<p>{mapError}</p>
@@ -711,6 +747,11 @@
 			{:else}
 				<div class="map-canvas" bind:this={mapContainer}></div>
 			{/if}
+			<div
+				class="map-chicago-overlay"
+				style:opacity={chicagoOverlayOpacity}
+				aria-hidden="true"
+			></div>
 
 			<div class="legend">
 				<span><i class="dot dot-stay"></i>Your stay</span>
@@ -724,6 +765,11 @@
 	.find-boat-map-section {
 		padding: var(--space-3) var(--space-5) var(--space-10);
 		background: var(--color-bg-primary);
+	}
+
+	.find-boat-header,
+	.planner-stack {
+		display: none;
 	}
 
 	.container {
@@ -767,6 +813,26 @@
 		position: absolute;
 		inset: 0;
 		border-radius: var(--radius-lg);
+	}
+
+	.map-chicago-overlay {
+		position: absolute;
+		inset: 0;
+		z-index: 8;
+		pointer-events: none;
+		background: rgba(248, 249, 250, 0.26);
+		backdrop-filter: blur(12px) saturate(1.06);
+		-webkit-backdrop-filter: blur(12px) saturate(1.06);
+		-webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1400 700'%3E%3Crect width='100%25' height='100%25' fill='white'/%3E%3Ctext x='50%25' y='54%25' text-anchor='middle' dominant-baseline='middle' font-family='Arial,Helvetica,sans-serif' font-weight='900' font-size='260' letter-spacing='14' textLength='96%25' lengthAdjust='spacingAndGlyphs' fill='black'%3ECHICAGO%3C/text%3E%3C/svg%3E");
+		-webkit-mask-repeat: no-repeat;
+		-webkit-mask-size: 100% 100%;
+		-webkit-mask-mode: luminance;
+		mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1400 700'%3E%3Crect width='100%25' height='100%25' fill='white'/%3E%3Ctext x='50%25' y='54%25' text-anchor='middle' dominant-baseline='middle' font-family='Arial,Helvetica,sans-serif' font-weight='900' font-size='260' letter-spacing='14' textLength='96%25' lengthAdjust='spacingAndGlyphs' fill='black'%3ECHICAGO%3C/text%3E%3C/svg%3E");
+		mask-repeat: no-repeat;
+		mask-size: 100% 100%;
+		mask-mode: luminance;
+		transition: opacity var(--motion-duration-default) linear;
+		will-change: opacity;
 	}
 
 	.map-fallback {
@@ -1166,6 +1232,11 @@
 			min-height: 600px;
 		}
 
+		.map-chicago-overlay {
+			-webkit-mask-size: 150% 100%;
+			mask-size: 150% 100%;
+		}
+
 		.legend {
 			right: var(--space-3);
 			top: var(--space-3);
@@ -1243,6 +1314,11 @@
 
 		.map-shell {
 			min-height: 520px;
+		}
+
+		.map-chicago-overlay {
+			-webkit-mask-size: 220% 100%;
+			mask-size: 220% 100%;
 		}
 
 		.legend {

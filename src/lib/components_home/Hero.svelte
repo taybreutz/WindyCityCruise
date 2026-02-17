@@ -1,17 +1,59 @@
 <script lang="ts"></script>
 
-<section class="hero">
-	<div class="hero-content">
-		<h1 class="hero-title">Chicago Boat Rentals & <br /> Luxury Yacht Charters</h1>
-		<p class="hero-subtitle">
-			The all in one place for the best boats, yachts, and water experiences in Chicago.
-		</p>
-		<div class="hero-cta-container">
-			<a href="/rentals" class="hero-cta hero-cta-primary">Book a Boat</a>
-			<a href="/boat-club" class="hero-cta hero-cta-secondary">Memberships</a>
+<section class="hero-shell">
+	<div class="hero container">
+		<div class="hero-content">
+			<h1 class="hero-title">
+				Connect, cruise, and
+				<br />
+				celebrate <span>everywhere</span>
+			</h1>
+			<p class="hero-subtitle">
+				We make rentals, memberships, and premium charters simpler and safer so your crew can spend
+				more time on the water.
+			</p>
+			<div class="hero-cta-container">
+				<a href="/rentals" class="hero-cta hero-cta-primary">View All Experiences</a>
+				<a href="/boat-club" class="hero-cta hero-cta-secondary">How It Works</a>
+			</div>
+		</div>
+
+		<div class="planner-banner">
+			<div class="planner-banner-top">
+				<div class="planner-banner-header">
+					<p class="planner-banner-kicker">Plan Your Day</p>
+					<h2 class="planner-banner-title">Find Your Boat</h2>
+				</div>
+				<div class="planner-banner-chips">
+					<button type="button" class="planner-chip active">Boat</button>
+					<button type="button" class="planner-chip">Big</button>
+					<button type="button" class="planner-chip">Sailboat</button>
+					<button type="button" class="planner-chip">Kayak</button>
+					<button type="button" class="planner-chip">Jet Ski</button>
+				</div>
+			</div>
+
+			<form class="planner-banner-form" action="/find-your-boat" method="GET">
+				<input
+					type="text"
+					name="near"
+					class="planner-banner-input"
+					placeholder="Chicago neighborhood, hotel, or address"
+				/>
+				<input type="date" name="checkIn" class="planner-banner-input planner-banner-date" />
+				<input type="date" name="checkOut" class="planner-banner-input planner-banner-date" />
+				<select name="guests" class="planner-banner-input planner-banner-select">
+					<option value="2">2 guests</option>
+					<option value="4">4 guests</option>
+					<option value="6">6 guests</option>
+					<option value="8">8 guests</option>
+					<option value="10">10+ guests</option>
+				</select>
+				<button type="submit" class="planner-banner-submit">Find Your Boat</button>
+			</form>
 		</div>
 	</div>
-	<div class="hero-media">
+	<div class="hero-media" aria-hidden="true">
 		<video
 			src="https://cdn.shopify.com/videos/c/o/v/11ba9511dd96488baa7ab28c502cf80a.mp4"
 			autoplay
@@ -25,76 +67,70 @@
 </section>
 
 <style>
+	.hero-shell {
+		--hero-accent: var(--color-frosted-blue);
+		--hero-inline-pad: 40px;
+		--hero-video-size: clamp(460px, 60vw, 1000px);
+		--hero-video-offset-x: 18%;
+		--hero-video-offset-y: 28%;
+		position: relative;
+		background: var(--color-bg-secondary);
+		overflow: hidden;
+		min-height: clamp(620px, 89svh, 860px);
+	}
+
 	.hero {
 		position: relative;
-		height: 70vh;
-		max-width: var(--content-max-width);
-		display: grid;
-		grid-template-columns: 1fr 1.5fr;
-		align-items: center;
-		gap: var(--space-8);
-		margin: 0 auto;
-		padding: var(--space-8) var(--space-5);
-		overflow: visible;
-	}
-
-	.hero-media {
-		position: relative;
-		height: 100%;
-		min-height: 400px;
-		border-radius: var(--radius-lg);
-		overflow: visible;
-		animation: fadeIn var(--motion-duration-slow) var(--motion-ease-emphasized);
-	}
-
-	.hero-video {
-		border-radius: var(--radius-lg);
 		width: 100%;
-		height: 100%;
-		object-fit: cover;
+		min-height: inherit;
+		padding-block: clamp(38px, 7vh, 76px) clamp(160px, 17vh, 220px);
+		z-index: 2;
 	}
 
-	@keyframes fadeIn {
-		0% {
-			opacity: 0;
-			filter: blur(8px);
-		}
-		100% {
-			opacity: 1;
-			filter: blur(0);
-		}
+	.hero.container {
+		margin: 0 auto;
+		padding-inline: clamp(var(--space-4), 3.5vw, var(--space-6));
 	}
 
 	.hero-content {
 		display: flex;
 		flex-direction: column;
 		align-items: flex-start;
-		gap: var(--space-5);
+		gap: clamp(var(--space-3), 1.6vw, var(--space-5));
+		max-width: min(62ch, 56vw);
+		padding-top: clamp(12px, 3.5vw, 64px);
+		z-index: 2;
 	}
 
 	.hero-title {
 		font-family: var(--font-family-system);
-		font-size: var(--font-size-2xl);
-		font-weight: 900;
-		line-height: var(--line-height-tight);
+		font-size: clamp(40px, 5.1vw, 64px);
+		font-weight: 800;
+		line-height: 1.04;
+		letter-spacing: -0.03em;
+		color: var(--color-text-primary);
 		margin: 0;
+	}
+
+	.hero-title span {
+		color: var(--hero-accent);
 	}
 
 	.hero-subtitle {
 		font-family: var(--font-family-system);
-		font-size: var(--font-size-lg);
+		font-size: clamp(var(--font-size-md), 1.25vw, 26px);
 		font-weight: var(--font-weight-regular);
-		line-height: var(--line-height-relaxed);
+		line-height: 1.4;
 		color: var(--color-text-secondary);
-		max-width: 480px;
+		max-width: 42ch;
 		margin: 0;
 	}
 
 	.hero-cta-container {
 		display: flex;
-		flex-direction: row;
+		flex-wrap: wrap;
 		gap: var(--space-3);
-		margin-top: var(--space-3);
+		margin-top: var(--space-1);
 	}
 
 	.hero-cta {
@@ -102,26 +138,29 @@
 		align-items: center;
 		justify-content: center;
 		min-height: var(--tap-target-min);
-		padding: 0 var(--space-5);
+		padding: 0 clamp(var(--space-5), 2vw, var(--space-8));
 		font-family: var(--font-family-system);
-		font-size: var(--font-size-sm);
+		font-size: clamp(var(--font-size-sm), 0.95vw, var(--font-size-md));
 		font-weight: var(--font-weight-medium);
-		line-height: var(--line-height-tight);
+		line-height: 1;
 		text-decoration: none;
-		border-radius: var(--radius-sm);
+		border: 1px solid transparent;
+		border-radius: var(--radius-md);
 		transition:
 			opacity var(--motion-duration-fast) var(--motion-ease-standard),
-			transform var(--motion-duration-fast) var(--motion-ease-standard);
+			transform var(--motion-duration-fast) var(--motion-ease-standard),
+			border-color var(--motion-duration-fast) var(--motion-ease-standard);
 	}
 
 	.hero-cta-primary {
-		background-color: var(--button-primary-bg);
-		color: var(--button-primary-text);
+		background-color: var(--hero-accent);
+		color: var(--color-text-primary);
 	}
 
 	.hero-cta-secondary {
-		background-color: var(--button-secondary-bg);
-		color: var(--button-secondary-text);
+		background-color: var(--color-surface);
+		color: var(--color-text-primary);
+		border-color: var(--color-border-strong);
 	}
 
 	.hero-cta:hover {
@@ -134,43 +173,234 @@
 		transform: scale(0.98);
 	}
 
-	@media (max-width: 900px) {
+	.hero-media {
+		position: absolute;
+		inset: 0;
+		pointer-events: none;
+		z-index: 1;
+	}
+
+	.hero-video {
+		position: absolute;
+		width: var(--hero-video-size);
+		height: var(--hero-video-size);
+		right: 0;
+		bottom: 0;
+		transform: translate(var(--hero-video-offset-x), var(--hero-video-offset-y));
+		object-fit: cover;
+		border-radius: 999px;
+		box-shadow: var(--shadow-2);
+		filter: saturate(1.08) contrast(1.02);
+	}
+
+	.hero-cta:focus-visible {
+		outline: var(--focus-ring-width) solid var(--focus-ring-color);
+		outline-offset: var(--focus-ring-offset);
+		border-radius: var(--radius-sm);
+	}
+
+	.planner-banner {
+		position: absolute;
+		left: clamp(var(--space-4), 3.2vw, var(--space-8));
+		right: clamp(var(--space-4), 3.2vw, var(--space-8));
+		bottom: clamp(var(--space-3), 2.8vh, var(--space-7));
+		background: var(--card-bg);
+		border: 1px solid var(--card-border);
+		border-bottom: 5px solid var(--hero-accent);
+		border-radius: var(--radius-md);
+		box-shadow: var(--shadow-2);
+		padding: var(--space-4);
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-3);
+		z-index: 4;
+	}
+
+	.planner-banner-top {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: var(--space-3);
+	}
+
+	.planner-banner-header {
+		display: flex;
+		flex-direction: column;
+		gap: 2px;
+	}
+
+	.planner-banner-kicker {
+		font-size: var(--font-size-xs);
+		font-weight: var(--font-weight-medium);
+		letter-spacing: 0.06em;
+		text-transform: uppercase;
+		color: var(--color-text-tertiary);
+		margin: 0;
+	}
+
+	.planner-banner-title {
+		font-size: var(--font-size-xl);
+		line-height: var(--line-height-tight);
+		font-weight: var(--font-weight-semibold);
+		color: var(--color-text-primary);
+		margin: 0;
+	}
+
+	.planner-banner-chips {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: flex-end;
+		gap: var(--space-2);
+	}
+
+	.planner-chip {
+		padding: 7px 12px;
+		border-radius: 999px;
+		border: 1px solid var(--color-border-default);
+		background: var(--color-surface);
+		color: var(--color-text-secondary);
+		font-size: var(--font-size-sm);
+		font-weight: var(--font-weight-medium);
+		line-height: 1;
+	}
+
+	.planner-chip.active {
+		background: var(--hero-accent);
+		border-color: var(--hero-accent);
+		color: var(--color-text-primary);
+	}
+
+	.planner-banner-form {
+		display: grid;
+		grid-template-columns: 1.6fr 1fr 1fr 0.9fr auto;
+		gap: var(--space-2);
+		align-items: stretch;
+	}
+
+	.planner-banner-input {
+		min-height: var(--tap-target-min);
+		padding: 0 12px;
+		border: 1px solid var(--color-border-default);
+		border-radius: var(--radius-sm);
+		background: var(--color-surface);
+		color: var(--color-text-primary);
+		font-size: var(--font-size-sm);
+	}
+
+	.planner-banner-date,
+	.planner-banner-select {
+		min-width: 0;
+	}
+
+	.planner-banner-submit {
+		min-height: var(--tap-target-min);
+		padding: 0 var(--space-4);
+		border-radius: var(--radius-sm);
+		border: 1px solid transparent;
+		background: var(--hero-accent);
+		color: var(--color-text-primary);
+		font-size: var(--font-size-sm);
+		font-weight: var(--font-weight-semibold);
+	}
+
+	@media (min-width: 1000px) {
+		.hero.container {
+			max-width: 1000px;
+			padding-right: var(--hero-inline-pad);
+			padding-left: var(--hero-inline-pad);
+		}
+	}
+
+	@media (min-width: 1200px) {
+		.hero.container {
+			max-width: 1200px;
+			padding-right: var(--hero-inline-pad);
+			padding-left: var(--hero-inline-pad);
+		}
+	}
+
+	@media (min-width: 1360px) {
+		.hero.container {
+			max-width: 1360px;
+			padding-right: var(--hero-inline-pad);
+			padding-left: var(--hero-inline-pad);
+		}
+	}
+
+	@media (max-width: 1040px) {
+		.hero-shell {
+			--hero-video-size: clamp(420px, 76vw, 680px);
+			--hero-video-offset-x: 20%;
+			--hero-video-offset-y: 34%;
+			min-height: clamp(620px, 84svh, 860px);
+		}
+
 		.hero {
-			grid-template-columns: 1fr;
-			min-height: auto;
-			height: auto;
-			padding: var(--space-6) var(--space-4);
+			padding-block: clamp(28px, 6vh, 52px) clamp(180px, 20vh, 260px);
 		}
 
 		.hero-content {
-			align-items: center;
-			text-align: center;
-			order: 2;
+			padding-top: 0;
+			max-width: min(58ch, 70vw);
 		}
 
-		.hero-media {
-			order: 1;
-			min-height: 300px;
+		.planner-banner-top {
+			flex-direction: column;
+			align-items: flex-start;
 		}
 
-		.hero-subtitle {
+		.planner-banner-chips {
+			justify-content: flex-start;
+		}
+
+		.planner-banner-form {
+			grid-template-columns: 1fr 1fr;
+		}
+
+		.planner-banner-submit {
+			grid-column: span 2;
+		}
+	}
+
+	@media (max-width: 640px) {
+		.hero-shell {
+			--hero-video-size: clamp(360px, 98vw, 540px);
+			--hero-video-offset-x: 30%;
+			--hero-video-offset-y: 36%;
+			min-height: 760px;
+		}
+
+		.hero {
+			padding-block: var(--space-6) 300px;
+		}
+
+		.hero-content {
 			max-width: 100%;
 		}
 
-		.hero-cta-container {
-			justify-content: center;
+		.hero-subtitle {
+			max-width: 30ch;
 		}
-	}
 
-	@media (min-width: 768px) {
-		.hero-title {
-			font-size: 40px;
+		.hero-cta {
+			min-height: 50px;
+			padding: 0 20px;
+			font-size: 16px;
 		}
-	}
 
-	@media (min-width: 1024px) {
-		.hero-title {
-			font-size: 48px;
+		.planner-banner {
+			left: var(--space-3);
+			right: var(--space-3);
+			bottom: var(--space-3);
+			padding: var(--space-3);
+		}
+
+		.planner-banner-form {
+			grid-template-columns: 1fr;
+		}
+
+		.planner-banner-submit {
+			grid-column: auto;
 		}
 	}
 </style>

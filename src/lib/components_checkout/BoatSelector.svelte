@@ -415,7 +415,8 @@
 										<button
 											type="button"
 											class="slot-button"
-											onclick={() => onSelectByDate(boat, date, slot, itemShortestDuration[item.id])}
+											onclick={() =>
+												onSelectByDate(boat, date, slot, itemShortestDuration[item.id])}
 										>
 											{formatTimeDisplay(slot)}
 										</button>
@@ -675,9 +676,10 @@
 		position: sticky;
 		top: var(--space-5);
 		z-index: 2;
-		margin: 0 0 var(--space-3) auto;
+		margin: 0 0 var(--space-3) 101%;
 		padding: 0.375rem 0.75rem;
 		width: fit-content;
+		white-space: nowrap;
 		border-radius: 999px;
 		background-color: var(--color-accent-quiet);
 		border: 1px solid var(--color-accent-muted);
