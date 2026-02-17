@@ -25,6 +25,7 @@
 		orgId: string;
 		selectedBoatId: string;
 		selectedDate: string;
+		itemRates: Record<string, number>;
 		onSelectByBoat: (boat: SelectedBoat) => void;
 		onSelectByDate: (boat: SelectedBoat, date: string, time: string, duration: number) => void;
 	}
@@ -35,9 +36,13 @@
 		orgId,
 		selectedBoatId,
 		selectedDate,
+		itemRates,
 		onSelectByBoat,
 		onSelectByDate
 	}: Props = $props();
+
+	// Effective rates: starts from server-resolved season rates, updated when availability is fetched
+	let effectiveRates = $state<Record<string, number>>({ ...itemRates });
 
 	const weekdayLabels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 	let date = $state('');
@@ -133,7 +138,7 @@
 			type: item.tier,
 			image: item.image_url ?? '',
 			capacity: item.capacity,
-			rate: item.hourly_rate,
+			rate: effectiveRates[item.id] ?? item.hourly_rate,
 			tier: item.tier,
 			item
 		};
@@ -173,6 +178,9 @@
 			override,
 			dateValue
 		);
+
+		// Update effective rate from season/override resolution
+		effectiveRates[item.id] = eff.hourlyRate;
 
 		if (!eff.available || eff.availableDurations.length === 0) {
 			slotsMap[item.id] = [];
@@ -397,7 +405,7 @@
 							<h3 class="boat-name">{item.name}</h3>
 							<p class="boat-meta">{item.tier} · Up to {item.capacity} guests</p>
 						</div>
-						<p class="boat-rate">${item.hourly_rate}<span>/hour</span></p>
+						<p class="boat-rate">${effectiveRates[item.id] ?? item.hourly_rate}<span>/hour</span></p>
 					</div>
 
 					{#if hasDate}

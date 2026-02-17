@@ -26,9 +26,11 @@
 		selectedDate?: string;
 		selectedTime?: string;
 		selectedDuration?: number;
+		initialDurations?: number[];
 		onDateChange?: (date: string) => void;
 		onTimeSelect?: (time: string) => void;
 		onDurationChange?: (duration: number) => void;
+		onRateChange?: (rate: number) => void;
 		supabase: SupabaseClient;
 		orgId: string;
 		item: Item;
@@ -39,9 +41,11 @@
 		selectedDate = '',
 		selectedTime = '',
 		selectedDuration = 0,
+		initialDurations = [],
 		onDateChange,
 		onTimeSelect,
 		onDurationChange,
+		onRateChange,
 		supabase,
 		orgId,
 		item
@@ -83,10 +87,22 @@
 	let availabilitySlots = $state<string[]>([]);
 	let activeDuration = $state(0);
 
+	// Use date-specific durations when available, otherwise server-resolved initial durations
+	const displayDurations = $derived(
+		cachedEff && cachedEff.availableDurations.length > 0
+			? cachedEff.availableDurations
+			: initialDurations
+	);
+
 	$effect(() => {
 		availabilityDate = selectedDate;
 		availabilityTime = selectedTime;
 		if (selectedDuration) activeDuration = selectedDuration;
+		// Default to shortest duration if none set yet
+		if (!activeDuration && initialDurations.length > 0) {
+			activeDuration = Math.min(...initialDurations);
+			onDurationChange?.(activeDuration);
+		}
 		const parsed = parseIsoDate(selectedDate);
 		if (parsed) {
 			calendarMonth = new Date(parsed.getFullYear(), parsed.getMonth(), 1);
@@ -146,6 +162,11 @@
 		cachedEff = eff;
 		cachedBookings = (bookingsData ?? []) as Booking[];
 		cachedEnforcedSlots = enforcedSlots;
+
+		// Propagate resolved rate back to parent
+		if (eff.available) {
+			onRateChange?.(eff.hourlyRate);
+		}
 
 		// Default to shortest available duration if none selected
 		if (eff.availableDurations.length > 0 && !activeDuration) {
@@ -278,9 +299,9 @@
 				</div>
 				<div class="schedule-item schedule-item-duration">
 					<span class="schedule-label">DURATION</span>
-					{#if cachedEff && cachedEff.availableDurations.length > 1}
+					{#if displayDurations.length > 1}
 						<div class="duration-options">
-							{#each [...cachedEff.availableDurations].sort((a, b) => a - b) as dur (dur)}
+							{#each [...displayDurations].sort((a, b) => a - b) as dur (dur)}
 								<button
 									type="button"
 									class="duration-option"

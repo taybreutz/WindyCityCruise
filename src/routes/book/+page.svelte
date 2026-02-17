@@ -132,6 +132,12 @@
 	function handleAvailabilityDurationChange(duration: number) {
 		tripDuration = duration;
 	}
+
+	function handleRateChange(rate: number) {
+		if (selectedBoat) {
+			selectedBoat = { ...selectedBoat, rate };
+		}
+	}
 </script>
 
 <svelte:head>
@@ -151,6 +157,7 @@
 						orgId={data.orgId}
 						selectedBoatId={selectedBoat?.id || ''}
 						selectedDate={selectionMethod === 'date' ? tripDate : ''}
+						itemRates={data.itemRates}
 						onSelectByBoat={handleSelectByBoat}
 						onSelectByDate={handleSelectByDate}
 					/>
@@ -169,9 +176,11 @@
 						selectedDate={tripDate}
 						selectedTime={tripTime}
 						selectedDuration={tripDuration}
+						initialDurations={data.itemDurations[selectedBoat.id] ?? []}
 						onDateChange={handleAvailabilityDateChange}
 						onTimeSelect={handleAvailabilityTimeSelect}
 						onDurationChange={handleAvailabilityDurationChange}
+						onRateChange={handleRateChange}
 						{supabase}
 						orgId={data.orgId}
 						item={selectedBoat.item}
