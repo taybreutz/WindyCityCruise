@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { env } from '$env/dynamic/public';
-	import { BOAT_POPUP_IMAGE, boatLocations, type BoatLocation } from '$lib/data/boats';
+	import { BOAT_POPUP_IMAGE, seedBoatLocations, type BoatLocation } from '$lib/data/boats';
 	import { onMount } from 'svelte';
 	import type { PageData } from './$types';
 
@@ -22,8 +22,10 @@
 
 	let mapboxgl: any = null;
 	let maps: any[] = [];
+	let mapBoats = $state<BoatLocation[]>(seedBoatLocations);
 	let mapReady = $state(false);
 	let mapError = $state('');
+	const guestLimit = $derived(Math.max(1, Number(data.guests) || 13));
 
 	function toRadians(value: number) {
 		return (value * Math.PI) / 180;
@@ -48,21 +50,48 @@
 			.replaceAll("'", '&#039;');
 	}
 
+	function boatCapacityValue(boat: BoatLocation) {
+		const capacity = Number(boat.capacity);
+		return Number.isFinite(capacity) && capacity > 0 ? capacity : 150;
+	}
+
+	function compareByGuestPreference(a: BoatWithDistance, b: BoatWithDistance) {
+		const aCapacity = boatCapacityValue(a);
+		const bCapacity = boatCapacityValue(b);
+		const aFits = aCapacity <= guestLimit ? 0 : 1;
+		const bFits = bCapacity <= guestLimit ? 0 : 1;
+		if (aFits !== bFits) {
+			return aFits - bFits;
+		}
+
+		const aCapacityGap = Math.abs(guestLimit - aCapacity);
+		const bCapacityGap = Math.abs(guestLimit - bCapacity);
+		if (aCapacityGap !== bCapacityGap) {
+			return aCapacityGap - bCapacityGap;
+		}
+
+		return a.distanceMiles - b.distanceMiles;
+	}
+
 	const boatsByDistance = $derived(
-		boatLocations
+		mapBoats
 			.map((boat) => ({
 				...boat,
 				distanceMiles: milesBetween(data.stayLat, data.stayLng, boat.lat, boat.lng)
 			}))
-			.sort((a, b) => a.distanceMiles - b.distanceMiles)
+			.sort(compareByGuestPreference)
 	);
 
-	const closestBoats = $derived(boatsByDistance.slice(0, 4));
+	const closestBoats = $derived(data.hasSearch ? boatsByDistance.slice(0, 4) : []);
 	const northBoats = $derived(
-		boatsByDistance.filter((boat) => boat.lat > data.stayLat && boat.distanceMiles <= 2.5)
+		data.hasSearch
+			? boatsByDistance.filter((boat) => boat.lat > data.stayLat && boat.distanceMiles <= 2.5)
+			: []
 	);
 	const southBoats = $derived(
-		boatsByDistance.filter((boat) => boat.lat < data.stayLat && boat.distanceMiles <= 2.5)
+		data.hasSearch
+			? boatsByDistance.filter((boat) => boat.lat < data.stayLat && boat.distanceMiles <= 2.5)
+			: []
 	);
 
 	function mapCenter(boats: BoatWithDistance[]) {
@@ -86,14 +115,12 @@
 	function getBoatPopupHtml(boat: BoatWithDistance) {
 		const boatName = escapeHtml(boat.name);
 		const boatDescription = escapeHtml(boat.description);
-		const bookingUrl =
-			data.date && data.guests
-				? `${boat.bookHref}?date=${encodeURIComponent(data.date)}&guests=${encodeURIComponent(data.guests)}`
-				: boat.bookHref;
+		const boatImage = boat.imageUrl ?? BOAT_POPUP_IMAGE;
+		const bookingUrl = getBookingUrl(boat);
 
 		return `
 			<div class="boat-popup-card">
-				<img src="${BOAT_POPUP_IMAGE}" alt="${boatName}" class="boat-popup-image" />
+				<img src="${boatImage}" alt="${boatName}" class="boat-popup-image" />
 				<div class="boat-popup-body">
 					<p class="boat-popup-title">${boatName}</p>
 					<p class="boat-popup-description">${boatDescription}</p>
@@ -101,6 +128,13 @@
 				</div>
 			</div>
 		`;
+	}
+
+	function getBookingUrl(boat: BoatLocation) {
+		const baseBookHref = boat.bookHref ?? '/book';
+		return data.date && data.guests
+			? `${baseBookHref}?date=${encodeURIComponent(data.date)}&guests=${encodeURIComponent(data.guests)}`
+			: baseBookHref;
 	}
 
 	function addMapboxCss() {
@@ -158,6 +192,22 @@
 		return loadedMapbox;
 	}
 
+	async function loadMapBoats() {
+		try {
+			const response = await fetch('/api/book-now-boats');
+			if (!response.ok) {
+				return;
+			}
+
+			const payload = await response.json();
+			if (Array.isArray(payload?.boats) && payload.boats.length > 0) {
+				mapBoats = payload.boats;
+			}
+		} catch (error) {
+			console.error('Unable to load map boats from Book Now API.', error);
+		}
+	}
+
 	function clearMaps() {
 		maps.forEach((entry) => entry.remove());
 		maps = [];
@@ -179,9 +229,17 @@
 
 		map.addControl(new mapboxgl.NavigationControl({ showCompass: false }), 'top-right');
 		map.on('load', () => {
+			if (!data.hasSearch) {
+				return;
+			}
+
 			new mapboxgl.Marker({ color: '#f97316' })
 				.setLngLat([data.stayLng, data.stayLat])
-				.setPopup(new mapboxgl.Popup({ offset: 20 }).setHTML(`<strong>Stay</strong><br/>${escapeHtml(data.stay)}`))
+				.setPopup(
+					new mapboxgl.Popup({ offset: 20 }).setHTML(
+						`<strong>Stay</strong><br/>${escapeHtml(data.stay)}`
+					)
+				)
 				.addTo(map);
 
 			boats.forEach((boat) => {
@@ -200,7 +258,13 @@
 	}
 
 	function rebuildMaps() {
-		if (!mapReady || !mapboxgl || !primaryMapContainer || !northMapContainer || !southMapContainer) {
+		if (
+			!mapReady ||
+			!mapboxgl ||
+			!primaryMapContainer ||
+			!northMapContainer ||
+			!southMapContainer
+		) {
 			return;
 		}
 
@@ -213,6 +277,7 @@
 
 	onMount(() => {
 		let destroyed = false;
+		void loadMapBoats();
 
 		async function initMaps() {
 			if (!mapboxToken) {
@@ -263,7 +328,7 @@
 			<h1 class="results-title">Find Your Boat Results</h1>
 			<p class="results-meta">
 				<span>{data.date || 'Date not set'}</span>
-				<span>{data.guests} Guests</span>
+				<span>{data.guestLabel}</span>
 				<span>{data.stay}</span>
 			</p>
 		</header>
@@ -307,6 +372,44 @@
 				</article>
 			</div>
 		</div>
+
+		<section class="boat-column-panel" aria-label="Boat options">
+			<div class="boat-column-header">
+				<h2>Boat Options</h2>
+				<p>Ordered by guest tier: {data.guestLabel}</p>
+			</div>
+
+			{#if !data.hasSearch}
+				<p class="boat-column-empty">
+					Search with a Chicago neighborhood, hotel, or address to populate boat pins and options.
+				</p>
+			{:else if boatsByDistance.length === 0}
+				<p class="boat-column-empty">
+					No boats available right now. Try another guest tier or nearby Chicago location.
+				</p>
+			{:else}
+				<div class="boat-column-list">
+					{#each boatsByDistance as boat (boat.id)}
+						<article class="boat-column-card">
+							<img
+								src={boat.imageUrl ?? BOAT_POPUP_IMAGE}
+								alt={boat.name}
+								class="boat-column-image"
+							/>
+							<div class="boat-column-body">
+								<p class="boat-column-title">{boat.name}</p>
+								<p class="boat-column-meta">
+									Up to {boat.capacity ?? 150} passengers
+									<span>{boat.distanceMiles.toFixed(1)} mi away</span>
+								</p>
+								<p class="boat-column-description">{boat.description}</p>
+								<a href={getBookingUrl(boat)} class="boat-column-book">Book Now</a>
+							</div>
+						</article>
+					{/each}
+				</div>
+			{/if}
+		</section>
 	</div>
 </section>
 
@@ -363,6 +466,7 @@
 	.map-layout {
 		display: grid;
 		gap: var(--space-4);
+		margin-bottom: var(--space-4);
 	}
 
 	.map-secondary-grid {
@@ -498,6 +602,127 @@
 		opacity: 0.9;
 	}
 
+	.boat-column-panel {
+		border-radius: var(--radius-lg);
+		border: 1px solid var(--color-border-subtle);
+		background: var(--color-bg-elevated);
+		box-shadow:
+			0 12px 28px rgba(2, 8, 23, 0.1),
+			0 2px 8px rgba(2, 8, 23, 0.08);
+		padding: var(--space-4);
+	}
+
+	.boat-column-header {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: baseline;
+		justify-content: space-between;
+		gap: var(--space-2);
+		margin-bottom: var(--space-3);
+	}
+
+	.boat-column-header h2 {
+		margin: 0;
+		font-family: var(--font-family-system);
+		font-size: var(--font-size-md);
+		font-weight: var(--font-weight-semibold);
+		color: var(--color-text-primary);
+	}
+
+	.boat-column-header p {
+		margin: 0;
+		font-family: var(--font-family-system);
+		font-size: var(--font-size-xs);
+		color: var(--color-text-secondary);
+	}
+
+	.boat-column-empty {
+		margin: 0;
+		padding: var(--space-2) 0;
+		font-family: var(--font-family-system);
+		font-size: var(--font-size-sm);
+		color: var(--color-text-secondary);
+	}
+
+	.boat-column-list {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-3);
+		max-height: 360px;
+		overflow-y: auto;
+		padding-right: var(--space-1);
+	}
+
+	.boat-column-card {
+		display: grid;
+		grid-template-columns: 110px minmax(0, 1fr);
+		gap: var(--space-3);
+		border: 1px solid var(--color-border-subtle);
+		border-radius: var(--radius-md);
+		background: #fff;
+		padding: var(--space-2);
+	}
+
+	.boat-column-image {
+		width: 110px;
+		height: 96px;
+		object-fit: cover;
+		border-radius: var(--radius-sm);
+	}
+
+	.boat-column-body {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-1);
+		min-width: 0;
+	}
+
+	.boat-column-title {
+		margin: 0;
+		font-family: var(--font-family-system);
+		font-size: var(--font-size-sm);
+		font-weight: var(--font-weight-semibold);
+		color: var(--color-text-primary);
+	}
+
+	.boat-column-meta {
+		margin: 0;
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-2);
+		font-family: var(--font-family-system);
+		font-size: var(--font-size-xs);
+		color: var(--color-text-secondary);
+	}
+
+	.boat-column-description {
+		margin: 0;
+		font-family: var(--font-family-system);
+		font-size: var(--font-size-xs);
+		color: var(--color-text-secondary);
+	}
+
+	.boat-column-book {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: fit-content;
+		padding: 0 14px;
+		height: 34px;
+		border-radius: var(--radius-sm);
+		font-family: var(--font-family-system);
+		font-size: 12px;
+		font-weight: var(--font-weight-semibold);
+		text-decoration: none;
+		color: #fff;
+		background: linear-gradient(135deg, #0f5f9a 0%, #1843a8 100%);
+		transition: opacity var(--motion-duration-fast) var(--motion-ease-standard);
+	}
+
+	.boat-column-book:hover {
+		opacity: 0.9;
+	}
+
 	@media (max-width: 900px) {
 		.map-secondary-grid {
 			grid-template-columns: 1fr;
@@ -521,6 +746,15 @@
 
 		.results-title {
 			font-size: var(--font-size-xl);
+		}
+
+		.boat-column-card {
+			grid-template-columns: 1fr;
+		}
+
+		.boat-column-image {
+			width: 100%;
+			height: 150px;
 		}
 	}
 </style>

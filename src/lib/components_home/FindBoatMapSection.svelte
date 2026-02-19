@@ -1,7 +1,8 @@
 <script lang="ts">
-	import { goto } from '$app/navigation';
+	import { browser } from '$app/environment';
+	import { afterNavigate } from '$app/navigation';
 	import { env } from '$env/dynamic/public';
-	import { BOAT_POPUP_IMAGE, boatLocations, type BoatLocation } from '$lib/data/boats';
+	import { BOAT_POPUP_IMAGE, seedBoatLocations, type BoatLocation } from '$lib/data/boats';
 	import { onMount } from 'svelte';
 
 	const mapboxToken = env.PUBLIC_MAPBOX_TOKEN;
@@ -21,6 +22,10 @@
 		reason: 'ok' | 'not_found' | 'outside_chicago';
 	}
 
+	interface BoatWithDistance extends BoatLocation {
+		distanceMiles: number;
+	}
+
 	let stayAddress = $state('River North, Chicago, IL');
 	let stayPoint = $state<PointOfInterest>({
 		name: 'River North, Chicago, IL',
@@ -34,6 +39,8 @@
 	let mapboxgl: any = null;
 	let stayMarker: any = null;
 	let boatMarkers: any[] = [];
+	let mapBoats = $state<BoatLocation[]>(seedBoatLocations);
+	let hasMapSearch = $state(false);
 	let chicagoOverlayOpacity = $state(1);
 
 	let mapReady = $state(false);
@@ -41,14 +48,14 @@
 	let mapError = $state('');
 	let addressError = $state('');
 	let plannerError = $state('');
-	let plannerMode = $state<'manual' | 'ai'>('manual');
 	let activePlannerTab = $state<
-		'boat_charter' | 'large_commercial_charter' | 'sailboat' | 'kayak' | 'jet_ski'
-	>('boat_charter');
+		'bareboat' | 'light_commercial' | 'commercial' | 'sailboat' | 'kayak' | 'jet_ski'
+	>('bareboat');
 	let checkInDate = $state('');
-	let checkOutDate = $state('');
-	let guests = $state('2');
-	let aiPrompt = $state('');
+	let guests = $state('13');
+	let searchedDate = $state('');
+	let searchedGuests = $state(13);
+	let searchedCategory = $state<'yachts' | 'yacht' | 'wakesurf' | 'club'>('yachts');
 	let liveLookupState = $state<
 		'idle' | 'searching' | 'ready' | 'outside_chicago' | 'not_found' | 'error'
 	>('idle');
@@ -66,14 +73,78 @@
 			.replaceAll("'", '&#039;');
 	}
 
+	function toRadians(value: number) {
+		return (value * Math.PI) / 180;
+	}
+
+	function milesBetween(lat1: number, lng1: number, lat2: number, lng2: number) {
+		const earthRadiusMiles = 3958.8;
+		const dLat = toRadians(lat2 - lat1);
+		const dLng = toRadians(lng2 - lng1);
+		const a =
+			Math.sin(dLat / 2) ** 2 +
+			Math.cos(toRadians(lat1)) * Math.cos(toRadians(lat2)) * Math.sin(dLng / 2) ** 2;
+		return earthRadiusMiles * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+	}
+
+	function boatCapacityValue(boat: BoatLocation) {
+		const capacity = Number(boat.capacity);
+		return Number.isFinite(capacity) && capacity > 0 ? capacity : 150;
+	}
+
+	function compareByGuestPreference(a: BoatWithDistance, b: BoatWithDistance) {
+		const aCapacity = boatCapacityValue(a);
+		const bCapacity = boatCapacityValue(b);
+		const aFits = aCapacity <= searchedGuests ? 0 : 1;
+		const bFits = bCapacity <= searchedGuests ? 0 : 1;
+		if (aFits !== bFits) {
+			return aFits - bFits;
+		}
+
+		const aCapacityGap = Math.abs(searchedGuests - aCapacity);
+		const bCapacityGap = Math.abs(searchedGuests - bCapacity);
+		if (aCapacityGap !== bCapacityGap) {
+			return aCapacityGap - bCapacityGap;
+		}
+
+		return a.distanceMiles - b.distanceMiles;
+	}
+
+	const searchedBoats = $derived.by(() => {
+		if (!hasMapSearch) {
+			return [] as BoatWithDistance[];
+		}
+
+		return mapBoats
+			.map((boat) => ({
+				...boat,
+				distanceMiles: milesBetween(stayPoint.lat, stayPoint.lng, boat.lat, boat.lng)
+			}))
+			.sort(compareByGuestPreference);
+	});
+
+	function buildBookHref(baseHref: string) {
+		const params = new URLSearchParams();
+		if (searchedDate) {
+			params.set('date', searchedDate);
+		}
+		if (searchedGuests) {
+			params.set('guests', String(searchedGuests));
+		}
+
+		const query = params.toString();
+		return query ? `${baseHref}?${query}` : baseHref;
+	}
+
 	function getBoatPopupHtml(boat: BoatLocation) {
 		const boatName = escapeHtml(boat.name);
 		const boatDescription = escapeHtml(boat.description ?? 'Chicago Pickup');
-		const bookHref = boat.bookHref ?? '/rentals';
+		const bookHref = buildBookHref(boat.bookHref ?? '/book');
+		const boatImage = boat.imageUrl ?? BOAT_POPUP_IMAGE;
 
 		return `
 			<div class="boat-popup-card">
-				<img src="${BOAT_POPUP_IMAGE}" alt="${boatName}" class="boat-popup-image" />
+				<img src="${boatImage}" alt="${boatName}" class="boat-popup-image" />
 				<div class="boat-popup-body">
 					<p class="boat-popup-title">${boatName}</p>
 					<p class="boat-popup-description">${boatDescription}</p>
@@ -81,6 +152,22 @@
 				</div>
 			</div>
 		`;
+	}
+
+	async function loadMapBoats() {
+		try {
+			const response = await fetch('/api/book-now-boats');
+			if (!response.ok) {
+				return;
+			}
+
+			const payload = await response.json();
+			if (Array.isArray(payload?.boats) && payload.boats.length > 0) {
+				mapBoats = payload.boats;
+			}
+		} catch (error) {
+			console.error('Unable to load map boats from Book Now API.', error);
+		}
 	}
 
 	function isWithinChicagoBounds(lng: number, lat: number) {
@@ -200,7 +287,12 @@
 		}
 
 		boatMarkers.forEach((marker) => marker.remove());
-		boatMarkers = boatLocations.map((boat) =>
+		boatMarkers = [];
+		if (!hasMapSearch) {
+			return;
+		}
+
+		boatMarkers = searchedBoats.map((boat) =>
 			new mapboxgl.Marker({ color: '#0f5f9a' })
 				.setLngLat([boat.lng, boat.lat])
 				.setPopup(
@@ -219,6 +311,11 @@
 
 		if (stayMarker) {
 			stayMarker.remove();
+			stayMarker = null;
+		}
+
+		if (!hasMapSearch) {
+			return;
 		}
 
 		stayMarker = new mapboxgl.Marker({ color: '#f97316' })
@@ -279,16 +376,12 @@
 	}
 
 	$effect(() => {
-		const query = stayAddress.trim();
-		const normalizedQuery = query.toLowerCase();
-
-		if (plannerMode !== 'manual') {
-			liveLookupState = 'idle';
-			liveLookupMessage = '';
-			liveLookupPoint = null;
-			liveLookupQuery = '';
+		if (!browser) {
 			return;
 		}
+
+		const query = stayAddress.trim();
+		const normalizedQuery = query.toLowerCase();
 
 		if (query.length < 3) {
 			liveLookupState = 'idle';
@@ -365,25 +458,19 @@
 		return () => clearTimeout(timer);
 	});
 
-	function handleWidgetSearch(payload: { date: string; guests: string; category: string }) {
-		const params = new URLSearchParams({
-			date: payload.date,
-			guests: payload.guests,
-			category: payload.category,
-			stay: stayPoint.name,
-			lat: String(stayPoint.lat),
-			lng: String(stayPoint.lng)
-		});
-
-		goto(`/find-your-boat?${params.toString()}`);
+	function applySearchContext(payload: { date: string; guests: string; category: string }) {
+		searchedDate = payload.date;
+		searchedGuests = Number(payload.guests) || 13;
+		searchedCategory = payload.category as 'yachts' | 'yacht' | 'wakesurf' | 'club';
 	}
 
 	function mapPlannerTabToCategory(
-		tab: 'boat_charter' | 'large_commercial_charter' | 'sailboat' | 'kayak' | 'jet_ski'
+		tab: 'bareboat' | 'light_commercial' | 'commercial' | 'sailboat' | 'kayak' | 'jet_ski'
 	) {
 		const mapping = {
-			boat_charter: 'yachts',
-			large_commercial_charter: 'yacht',
+			bareboat: 'yachts',
+			light_commercial: 'yacht',
+			commercial: 'yacht',
 			sailboat: 'wakesurf',
 			kayak: 'club',
 			jet_ski: 'yachts'
@@ -401,9 +488,39 @@
 			return;
 		}
 
-		if (checkOutDate && checkOutDate < checkInDate) {
-			plannerError = 'Check-out must be after check-in.';
+		const stayResolved = await resolveStayPoint();
+		if (!stayResolved) {
 			return;
+		}
+		hasMapSearch = true;
+		applySearchContext({
+			date: checkInDate,
+			guests,
+			category: mapPlannerTabToCategory(activePlannerTab)
+		});
+		plotStayMarker();
+		plotBoatMarkers();
+	}
+
+	async function hydrateSearchFromUrl() {
+		if (typeof window === 'undefined') {
+			return;
+		}
+
+		const params = new URLSearchParams(window.location.search);
+		const near = params.get('near') ?? params.get('stay');
+		if (!near) {
+			return;
+		}
+
+		const date = params.get('date') ?? params.get('checkIn') ?? '';
+		const guestsFromParams = params.get('guests') ?? '';
+		const categoryFromParams = params.get('category');
+
+		stayAddress = near;
+		checkInDate = date;
+		if (guestsFromParams) {
+			guests = guestsFromParams;
 		}
 
 		const stayResolved = await resolveStayPoint();
@@ -411,15 +528,29 @@
 			return;
 		}
 
-		handleWidgetSearch({
-			date: checkInDate,
-			guests,
-			category: mapPlannerTabToCategory(activePlannerTab)
+		hasMapSearch = true;
+		applySearchContext({
+			date,
+			guests: guestsFromParams || guests,
+			category:
+				categoryFromParams && ['yachts', 'yacht', 'wakesurf', 'club'].includes(categoryFromParams)
+					? categoryFromParams
+					: mapPlannerTabToCategory(activePlannerTab)
+		});
+		plotStayMarker();
+		plotBoatMarkers();
+	}
+
+	if (browser) {
+		afterNavigate(() => {
+			void hydrateSearchFromUrl();
 		});
 	}
 
 	onMount(() => {
 		let isDestroyed = false;
+		void loadMapBoats();
+		void hydrateSearchFromUrl();
 
 		async function initMap() {
 			if (!mapContainer) {
@@ -472,7 +603,7 @@
 	});
 
 	$effect(() => {
-		if (!mapReady || !map || !stayPoint) {
+		if (!mapReady || !map || !stayPoint || !hasMapSearch) {
 			return;
 		}
 
@@ -483,6 +614,14 @@
 		});
 
 		plotStayMarker();
+	});
+
+	$effect(() => {
+		if (!mapReady || !map) {
+			return;
+		}
+
+		plotBoatMarkers();
 	});
 
 	$effect(() => {
@@ -520,7 +659,7 @@
 	});
 </script>
 
-<section class="find-boat-map-section">
+<section class="find-boat-map-section" id="find-your-boat-map">
 	<div class="container">
 		<div class="find-boat-header">
 			<p class="section-label">Plan Your Day</p>
@@ -532,35 +671,8 @@
 				<button
 					type="button"
 					class="planner-product"
-					class:active={plannerMode === 'ai'}
-					onclick={() => (plannerMode = 'ai')}
-				>
-					<span class="planner-product-chip">
-						<svg
-							xmlns="http://www.w3.org/2000/svg"
-							viewBox="0 0 24 24"
-							fill="none"
-							stroke="currentColor"
-							stroke-width="2"
-							stroke-linecap="round"
-							stroke-linejoin="round"
-							aria-hidden="true"
-						>
-							<path d="M12 2l1.3 6.3L20 12l-6.7 3.7L12 22l-1.3-6.3L4 12l6.7-3.7L12 2z" />
-							<path d="M19 4l.5 2.3L22 7l-2.5.7L19 10l-.5-2.3L16 7l2.5-.7L19 4z" />
-						</svg>
-					</span>
-					<span class="planner-product-label">AI</span>
-				</button>
-
-				<button
-					type="button"
-					class="planner-product"
-					class:active={plannerMode === 'manual' && activePlannerTab === 'boat_charter'}
-					onclick={() => {
-						activePlannerTab = 'boat_charter';
-						plannerMode = 'manual';
-					}}
+					class:active={activePlannerTab === 'bareboat'}
+					onclick={() => (activePlannerTab = 'bareboat')}
 				>
 					<span class="planner-product-chip">
 						<svg viewBox="0 0 24 24" aria-hidden="true">
@@ -568,17 +680,21 @@
 							<path d="M7 9h10M9 6h6"></path>
 						</svg>
 					</span>
-					<span class="planner-product-label">Boat</span>
+					<span class="planner-product-label">Bareboat</span>
+					<span class="planner-product-capacity">
+						<svg viewBox="0 0 24 24" aria-hidden="true">
+							<circle cx="12" cy="7" r="3.2"></circle>
+							<path d="M6.5 19.5c0-2.9 2.4-5.3 5.5-5.3s5.5 2.4 5.5 5.3"></path>
+						</svg>
+						13
+					</span>
 				</button>
 
 				<button
 					type="button"
 					class="planner-product"
-					class:active={plannerMode === 'manual' && activePlannerTab === 'large_commercial_charter'}
-					onclick={() => {
-						activePlannerTab = 'large_commercial_charter';
-						plannerMode = 'manual';
-					}}
+					class:active={activePlannerTab === 'light_commercial'}
+					onclick={() => (activePlannerTab = 'light_commercial')}
 				>
 					<span class="planner-product-chip">
 						<svg viewBox="0 0 24 24" aria-hidden="true">
@@ -588,17 +704,44 @@
 							<circle cx="17" cy="16" r="1.2"></circle>
 						</svg>
 					</span>
-					<span class="planner-product-label">Big</span>
+					<span class="planner-product-label">Light-Commercial</span>
+					<span class="planner-product-capacity">
+						<svg viewBox="0 0 24 24" aria-hidden="true">
+							<circle cx="12" cy="7" r="3.2"></circle>
+							<path d="M6.5 19.5c0-2.9 2.4-5.3 5.5-5.3s5.5 2.4 5.5 5.3"></path>
+						</svg>
+						20
+					</span>
 				</button>
 
 				<button
 					type="button"
 					class="planner-product"
-					class:active={plannerMode === 'manual' && activePlannerTab === 'sailboat'}
-					onclick={() => {
-						activePlannerTab = 'sailboat';
-						plannerMode = 'manual';
-					}}
+					class:active={activePlannerTab === 'commercial'}
+					onclick={() => (activePlannerTab = 'commercial')}
+				>
+					<span class="planner-product-chip">
+						<svg viewBox="0 0 24 24" aria-hidden="true">
+							<rect x="3" y="8.5" width="18" height="8.5" rx="1.6"></rect>
+							<path d="M6 8.5V5.5h12v3"></path>
+							<path d="M8 17.5v2M16 17.5v2"></path>
+						</svg>
+					</span>
+					<span class="planner-product-label">Commercial</span>
+					<span class="planner-product-capacity">
+						<svg viewBox="0 0 24 24" aria-hidden="true">
+							<circle cx="12" cy="7" r="3.2"></circle>
+							<path d="M6.5 19.5c0-2.9 2.4-5.3 5.5-5.3s5.5 2.4 5.5 5.3"></path>
+						</svg>
+						49
+					</span>
+				</button>
+
+				<button
+					type="button"
+					class="planner-product"
+					class:active={activePlannerTab === 'sailboat'}
+					onclick={() => (activePlannerTab = 'sailboat')}
 				>
 					<span class="planner-product-chip">
 						<svg viewBox="0 0 24 24" aria-hidden="true">
@@ -609,16 +752,43 @@
 						</svg>
 					</span>
 					<span class="planner-product-label">Sailboat</span>
+					<span class="planner-product-capacity">
+						<svg viewBox="0 0 24 24" aria-hidden="true">
+							<circle cx="12" cy="7" r="3.2"></circle>
+							<path d="M6.5 19.5c0-2.9 2.4-5.3 5.5-5.3s5.5 2.4 5.5 5.3"></path>
+						</svg>
+						7
+					</span>
 				</button>
 
 				<button
 					type="button"
 					class="planner-product"
-					class:active={plannerMode === 'manual' && activePlannerTab === 'kayak'}
-					onclick={() => {
-						activePlannerTab = 'kayak';
-						plannerMode = 'manual';
-					}}
+					class:active={activePlannerTab === 'jet_ski'}
+					onclick={() => (activePlannerTab = 'jet_ski')}
+				>
+					<span class="planner-product-chip">
+						<svg viewBox="0 0 24 24" aria-hidden="true">
+							<path d="M4 14h10l3-3h3"></path>
+							<path d="M5 17h12"></path>
+							<path d="M7 11l2-2h3"></path>
+						</svg>
+					</span>
+					<span class="planner-product-label">JetSki</span>
+					<span class="planner-product-capacity">
+						<svg viewBox="0 0 24 24" aria-hidden="true">
+							<circle cx="12" cy="7" r="3.2"></circle>
+							<path d="M6.5 19.5c0-2.9 2.4-5.3 5.5-5.3s5.5 2.4 5.5 5.3"></path>
+						</svg>
+						2
+					</span>
+				</button>
+
+				<button
+					type="button"
+					class="planner-product"
+					class:active={activePlannerTab === 'kayak'}
+					onclick={() => (activePlannerTab = 'kayak')}
 				>
 					<span class="planner-product-chip">
 						<svg viewBox="0 0 24 24" aria-hidden="true">
@@ -628,116 +798,89 @@
 						</svg>
 					</span>
 					<span class="planner-product-label">Kayak</span>
-				</button>
-
-				<button
-					type="button"
-					class="planner-product"
-					class:active={plannerMode === 'manual' && activePlannerTab === 'jet_ski'}
-					onclick={() => {
-						activePlannerTab = 'jet_ski';
-						plannerMode = 'manual';
-					}}
-				>
-					<span class="planner-product-chip">
+					<span class="planner-product-capacity">
 						<svg viewBox="0 0 24 24" aria-hidden="true">
-							<path d="M4 14h10l3-3h3"></path>
-							<path d="M5 17h12"></path>
-							<path d="M7 11l2-2h3"></path>
+							<circle cx="12" cy="7" r="3.2"></circle>
+							<path d="M6.5 19.5c0-2.9 2.4-5.3 5.5-5.3s5.5 2.4 5.5 5.3"></path>
 						</svg>
+						1
 					</span>
-					<span class="planner-product-label">Jet Ski</span>
 				</button>
 			</div>
 
-			{#if plannerMode === 'manual'}
-				<form class="planner-search-bar" onsubmit={handlePlannerSearch}>
-					<input
-						id="stay-address"
-						type="text"
-						class="planner-location-input"
-						placeholder="Enter a Chicago neighborhood, hotel, or address"
-						bind:value={stayAddress}
-					/>
-
-					<div class="planner-bar-divider"></div>
-
-					<div class="planner-date-range">
-						<input id="check-in" type="date" bind:value={checkInDate} aria-label="Check in date" />
-						<span aria-hidden="true">-</span>
-						<input
-							id="check-out"
-							type="date"
-							bind:value={checkOutDate}
-							aria-label="Check out date"
-						/>
-					</div>
-
-					<div class="planner-bar-divider"></div>
-
-					<div class="planner-guests">
-						<select id="guests" bind:value={guests} aria-label="Guests">
-							<option value="2">1 room, 2 guests</option>
-							<option value="4">1 room, 4 guests</option>
-							<option value="6">1 room, 6 guests</option>
-							<option value="8">2 rooms, 8 guests</option>
-							<option value="10">2 rooms, 10+ guests</option>
-						</select>
-					</div>
-
-					<button
-						type="submit"
-						class="planner-submit"
-						disabled={geocoding}
-						aria-label={geocoding ? 'Searching' : 'Search'}
+			<form class="planner-search-bar" onsubmit={handlePlannerSearch}>
+				<button type="button" class="planner-ai-trigger" aria-label="AI planner (coming soon)">
+					<svg
+						xmlns="http://www.w3.org/2000/svg"
+						viewBox="0 0 24 24"
+						fill="none"
+						stroke="currentColor"
+						stroke-width="2"
+						stroke-linecap="round"
+						stroke-linejoin="round"
+						aria-hidden="true"
 					>
-						<svg viewBox="0 0 24 24" aria-hidden="true">
-							<circle cx="11" cy="11" r="7"></circle>
-							<path d="M20 20l-4.2-4.2"></path>
-						</svg>
-					</button>
-				</form>
+						<path d="M12 2l1.3 6.3L20 12l-6.7 3.7L12 22l-1.3-6.3L4 12l6.7-3.7L12 2z" />
+						<path d="M19 4l.5 2.3L22 7l-2.5.7L19 10l-.5-2.3L16 7l2.5-.7L19 4z" />
+					</svg>
+				</button>
 
-				{#if liveLookupState !== 'idle' && !addressError && !plannerError}
-					<p
-						class="planner-live-hint"
-						class:ready={liveLookupState === 'ready'}
-						class:warning={liveLookupState === 'outside_chicago' || liveLookupState === 'not_found'}
-						class:error={liveLookupState === 'error'}
-						aria-live="polite"
-					>
-						{liveLookupMessage}
-					</p>
-				{/if}
-			{:else}
-				<div class="planner-ai-card">
-					<div class="planner-ai-logo" aria-hidden="true">
-						<svg viewBox="0 0 180 80" role="img">
-							<rect x="2" y="2" width="176" height="76" rx="20"></rect>
-							<path d="M31 60l14-40h12l14 40h-11l-2.5-8h-14l-2.5 8z"></path>
-							<path d="M45 43h10l-5-16z"></path>
-							<path d="M91 20h11v40h-11z"></path>
-							<path d="M117 20h11v31h20v9h-31z"></path>
-							<path d="M153 17l7 7M149 27h11"></path>
-						</svg>
-					</div>
-					<input
-						id="ai-prompt"
-						type="text"
-						class="planner-ai-input"
-						placeholder="Tell AI where you're staying and what kind of boat day you want"
-						bind:value={aiPrompt}
-					/>
-					<button type="button" class="planner-ai-back" onclick={() => (plannerMode = 'manual')}>
-						Use Standard Search
-					</button>
+				<input
+					id="stay-address"
+					type="text"
+					class="planner-location-input"
+					placeholder="Enter a Chicago neighborhood, hotel, or address"
+					bind:value={stayAddress}
+				/>
+
+				<div class="planner-bar-divider"></div>
+
+				<div class="planner-date-range">
+					<input id="check-in" type="date" bind:value={checkInDate} aria-label="Trip date" />
 				</div>
+
+				<div class="planner-bar-divider"></div>
+
+				<div class="planner-guests">
+					<select id="guests" bind:value={guests} aria-label="Guests">
+						<option value="13">13 or less</option>
+						<option value="20">20 or less</option>
+						<option value="49">49 or less</option>
+						<option value="150">Up to 150</option>
+					</select>
+				</div>
+
+				<button
+					type="submit"
+					class="planner-submit"
+					disabled={geocoding}
+					aria-label={geocoding ? 'Searching' : 'Search'}
+				>
+					<svg viewBox="0 0 24 24" aria-hidden="true">
+						<circle cx="11" cy="11" r="7"></circle>
+						<path d="M20 20l-4.2-4.2"></path>
+					</svg>
+				</button>
+			</form>
+
+			{#if liveLookupState !== 'idle' && !addressError && !plannerError}
+				<p
+					class="planner-live-hint"
+					class:ready={liveLookupState === 'ready'}
+					class:warning={liveLookupState === 'outside_chicago' || liveLookupState === 'not_found'}
+					class:error={liveLookupState === 'error'}
+					aria-live="polite"
+				>
+					{liveLookupMessage}
+				</p>
 			{/if}
 
 			{#if addressError || plannerError}
 				<p class="planner-error">{addressError || plannerError}</p>
 			{/if}
 		</div>
+
+		<div class="map-planner-spacer" aria-hidden="true"></div>
 
 		<div class="map-shell" bind:this={mapShell}>
 			{#if mapError}
@@ -758,6 +901,48 @@
 				<span><i class="dot dot-boat"></i>Boat locations</span>
 			</div>
 		</div>
+
+		<section class="home-map-results" id="find-your-boat-map-results">
+			<div class="home-map-results-header">
+				<h3>Boat Matches</h3>
+				{#if hasMapSearch}
+					<p>Ordered for {searchedGuests} guests · {searchedCategory}</p>
+				{/if}
+			</div>
+
+			{#if !hasMapSearch}
+				<p class="home-map-results-empty">
+					Use the planner above to search by neighborhood, hotel, or address.
+				</p>
+			{:else if searchedBoats.length === 0}
+				<p class="home-map-results-empty">
+					No boats matched this search yet. Try a different date or guest size.
+				</p>
+			{:else}
+				<div class="home-map-results-list">
+					{#each searchedBoats as boat (boat.id)}
+						<article class="home-map-results-card">
+							<img
+								src={boat.imageUrl ?? BOAT_POPUP_IMAGE}
+								alt={boat.name}
+								class="home-map-results-image"
+							/>
+							<div class="home-map-results-body">
+								<p class="home-map-results-title">{boat.name}</p>
+								<p class="home-map-results-meta">
+									Up to {boat.capacity ?? 150} passengers
+									<span>{boat.distanceMiles.toFixed(1)} mi</span>
+								</p>
+								<p class="home-map-results-description">{boat.description}</p>
+								<a href={buildBookHref(boat.bookHref ?? '/book')} class="home-map-results-book"
+									>Book Now</a
+								>
+							</div>
+						</article>
+					{/each}
+				</div>
+			{/if}
+		</section>
 	</div>
 </section>
 
@@ -770,6 +955,10 @@
 	.find-boat-header,
 	.planner-stack {
 		display: none;
+	}
+
+	.map-planner-spacer {
+		height: clamp(150px, 16vh, 230px);
 	}
 
 	.container {
@@ -900,7 +1089,7 @@
 			transform var(--motion-duration-fast) var(--motion-ease-standard);
 	}
 
-	.planner-product svg {
+	.planner-product-chip svg {
 		width: 28px;
 		height: 28px;
 		fill: none;
@@ -915,7 +1104,7 @@
 	}
 
 	.planner-product.active {
-		color: var(--color-text-inverse);
+		color: var(--color-text-primary);
 	}
 
 	.planner-product.active .planner-product-chip {
@@ -931,14 +1120,31 @@
 		transform: translateY(-1px);
 	}
 
-	.planner-product:first-child.active .planner-product-chip {
-		background: var(--color-text-primary);
-		border-color: var(--color-text-primary);
+	.planner-product-capacity {
+		display: inline-flex;
+		align-items: center;
+		gap: 4px;
+		font-size: var(--font-size-xs);
+		color: var(--color-text-secondary);
+	}
+
+	.planner-product-capacity svg {
+		width: 14px;
+		height: 14px;
+		fill: none;
+		stroke: currentColor;
+		stroke-width: 1.8;
+		stroke-linecap: round;
+		stroke-linejoin: round;
+	}
+
+	.planner-product.active .planner-product-capacity {
+		color: var(--color-text-primary);
 	}
 
 	.planner-search-bar {
 		display: grid;
-		grid-template-columns: minmax(0, 1fr) auto auto auto auto auto;
+		grid-template-columns: auto minmax(0, 1fr) auto auto auto auto auto;
 		align-items: center;
 		gap: 0;
 		border-radius: var(--radius-lg);
@@ -947,6 +1153,32 @@
 		box-shadow: var(--shadow-2);
 		overflow: hidden;
 		padding: var(--space-2);
+	}
+
+	.planner-ai-trigger {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: var(--button-height);
+		height: var(--button-height);
+		border: 1px solid var(--color-border-default);
+		border-radius: var(--radius-md);
+		background: var(--color-surface);
+		color: var(--color-text-primary);
+		cursor: pointer;
+		transition:
+			transform var(--motion-duration-fast) var(--motion-ease-standard),
+			opacity var(--motion-duration-fast) var(--motion-ease-standard);
+	}
+
+	.planner-ai-trigger svg {
+		width: 20px;
+		height: 20px;
+	}
+
+	.planner-ai-trigger:hover {
+		transform: translateY(-1px);
+		opacity: var(--state-hover-opacity);
 	}
 
 	.planner-location-input,
@@ -985,13 +1217,6 @@
 	.planner-date-range input {
 		width: 128px;
 		padding: 0;
-	}
-
-	.planner-date-range span {
-		font-size: var(--font-size-xl);
-		font-weight: 300;
-		color: var(--color-text-secondary);
-		padding: 0 var(--space-2);
 	}
 
 	.planner-guests {
@@ -1038,65 +1263,6 @@
 	.planner-submit:disabled {
 		opacity: 0.6;
 		cursor: not-allowed;
-	}
-
-	.planner-ai-card {
-		display: grid;
-		grid-template-columns: auto minmax(0, 1fr) auto;
-		align-items: center;
-		gap: var(--space-4);
-		padding: var(--space-4);
-		border-radius: var(--radius-lg);
-		background:
-			radial-gradient(circle at 10% -10%, var(--color-accent-muted), transparent 45%),
-			radial-gradient(circle at 90% 10%, var(--color-accent-quiet), transparent 48%), var(--card-bg);
-		border: 1px solid var(--card-border);
-		box-shadow: var(--shadow-2);
-	}
-
-	.planner-ai-logo svg {
-		width: 96px;
-		height: 44px;
-		fill: none;
-		stroke: var(--color-primary);
-		stroke-width: 5;
-		stroke-linecap: round;
-		stroke-linejoin: round;
-	}
-
-	.planner-ai-input {
-		height: calc(var(--button-height) + var(--space-4));
-		padding: 0 var(--space-3);
-		border: 1px solid var(--input-border);
-		border-radius: var(--radius-md);
-		background: var(--input-bg);
-		font-family: var(--font-family-system);
-		font-size: var(--font-size-base);
-		color: var(--color-text-primary);
-		outline: none;
-	}
-
-	.planner-ai-input:focus {
-		border-color: var(--color-border-strong);
-		box-shadow: 0 0 0 var(--focus-ring-width) var(--focus-ring-color);
-	}
-
-	.planner-ai-back {
-		height: var(--button-height);
-		padding: 0 var(--space-3);
-		border: none;
-		border-radius: var(--radius-md);
-		background: var(--button-secondary-bg);
-		color: var(--button-secondary-text);
-		font-family: var(--font-family-system);
-		font-size: var(--font-size-sm);
-		font-weight: var(--font-weight-semibold);
-		cursor: pointer;
-		transition: opacity var(--motion-duration-fast) var(--motion-ease-standard);
-	}
-
-	.planner-ai-back:hover {
-		opacity: var(--state-hover-opacity);
 	}
 
 	.planner-live-hint {
@@ -1227,7 +1393,125 @@
 		opacity: 0.9;
 	}
 
+	.home-map-results {
+		margin-top: var(--space-4);
+		border-radius: var(--radius-lg);
+		border: 1px solid var(--color-border-subtle);
+		background: var(--color-bg-elevated);
+		box-shadow: var(--shadow-2);
+		padding: var(--space-4);
+	}
+
+	.home-map-results-header {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: baseline;
+		justify-content: space-between;
+		gap: var(--space-2);
+		margin-bottom: var(--space-3);
+	}
+
+	.home-map-results-header h3 {
+		margin: 0;
+		font-family: var(--font-family-system);
+		font-size: var(--font-size-md);
+		font-weight: var(--font-weight-semibold);
+		color: var(--color-text-primary);
+	}
+
+	.home-map-results-header p {
+		margin: 0;
+		font-family: var(--font-family-system);
+		font-size: var(--font-size-xs);
+		color: var(--color-text-secondary);
+	}
+
+	.home-map-results-empty {
+		margin: 0;
+		font-family: var(--font-family-system);
+		font-size: var(--font-size-sm);
+		color: var(--color-text-secondary);
+	}
+
+	.home-map-results-list {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-3);
+		max-height: 360px;
+		overflow-y: auto;
+		padding-right: 2px;
+	}
+
+	.home-map-results-card {
+		display: grid;
+		grid-template-columns: 120px minmax(0, 1fr);
+		gap: var(--space-3);
+		border: 1px solid var(--color-border-subtle);
+		border-radius: var(--radius-md);
+		background: var(--color-surface);
+		padding: var(--space-2);
+	}
+
+	.home-map-results-image {
+		width: 120px;
+		height: 100px;
+		object-fit: cover;
+		border-radius: var(--radius-sm);
+	}
+
+	.home-map-results-body {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-1);
+		min-width: 0;
+	}
+
+	.home-map-results-title {
+		margin: 0;
+		font-family: var(--font-family-system);
+		font-size: var(--font-size-sm);
+		font-weight: var(--font-weight-semibold);
+		color: var(--color-text-primary);
+	}
+
+	.home-map-results-meta {
+		margin: 0;
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-2);
+		font-family: var(--font-family-system);
+		font-size: var(--font-size-xs);
+		color: var(--color-text-secondary);
+	}
+
+	.home-map-results-description {
+		margin: 0;
+		font-family: var(--font-family-system);
+		font-size: var(--font-size-xs);
+		color: var(--color-text-secondary);
+	}
+
+	.home-map-results-book {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: fit-content;
+		padding: 0 14px;
+		height: 34px;
+		border-radius: var(--radius-sm);
+		font-family: var(--font-family-system);
+		font-size: 12px;
+		font-weight: var(--font-weight-semibold);
+		text-decoration: none;
+		color: var(--button-primary-text);
+		background: var(--button-primary-bg);
+	}
+
 	@media (max-width: 900px) {
+		.map-planner-spacer {
+			height: clamp(120px, 14vh, 180px);
+		}
+
 		.map-shell {
 			min-height: 600px;
 		}
@@ -1258,6 +1542,7 @@
 			gap: var(--space-2);
 		}
 
+		.planner-ai-trigger,
 		.planner-location-input,
 		.planner-date-range input,
 		.planner-guests select {
@@ -1265,6 +1550,7 @@
 			font-size: var(--font-size-base);
 		}
 
+		.planner-ai-trigger,
 		.planner-location-input,
 		.planner-date-range,
 		.planner-guests {
@@ -1298,18 +1584,23 @@
 			height: 26px;
 		}
 
-		.planner-ai-card {
+		.home-map-results-card {
 			grid-template-columns: 1fr;
 		}
 
-		.planner-ai-logo {
-			justify-self: center;
+		.home-map-results-image {
+			width: 100%;
+			height: 150px;
 		}
 	}
 
 	@media (max-width: 640px) {
 		.find-boat-map-section {
 			padding: var(--space-4) var(--space-4) var(--space-8);
+		}
+
+		.map-planner-spacer {
+			height: clamp(90px, 10vh, 140px);
 		}
 
 		.map-shell {
@@ -1341,18 +1632,13 @@
 			border-radius: var(--radius-sm);
 		}
 
-		.planner-product svg {
+		.planner-product-chip svg {
 			width: 20px;
 			height: 20px;
 		}
 
 		.planner-location-input {
 			padding: 0 var(--space-3);
-		}
-
-		.planner-ai-logo svg {
-			width: 96px;
-			height: 44px;
 		}
 	}
 </style>
