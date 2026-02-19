@@ -1,4 +1,7 @@
-<script lang="ts"></script>
+<script lang="ts">
+	const mediaRingText = 'The Playpen • Chicago, Illinois • ';
+	const mediaRingContent = mediaRingText.repeat(12);
+</script>
 
 <section class="hero-shell">
 	<div class="hero container">
@@ -63,6 +66,19 @@
 			preload="auto"
 			class="hero-video"
 		></video>
+		<div class="hero-video-ring">
+			<svg viewBox="0 0 100 100" role="presentation" focusable="false">
+				<defs>
+					<path
+						id="hero-video-ring-path"
+						d="M 50,50 m -50.5,0 a 50.5,50.5 0 1,1 101,0 a 50.5,50.5 0 1,1 -101,0"
+					/>
+				</defs>
+				<text>
+					<textPath href="#hero-video-ring-path">{mediaRingContent}</textPath>
+				</text>
+			</svg>
+		</div>
 	</div>
 </section>
 
@@ -191,6 +207,47 @@
 		border-radius: 999px;
 		box-shadow: var(--shadow-2);
 		filter: saturate(1.08) contrast(1.02);
+	}
+
+	.hero-video-ring {
+		position: absolute;
+		width: var(--hero-video-size);
+		height: var(--hero-video-size);
+		right: 0;
+		bottom: 0;
+		transform: translate(var(--hero-video-offset-x), var(--hero-video-offset-y));
+		display: grid;
+		place-items: center;
+		z-index: 3;
+		animation: media-ring-spin 34s linear infinite;
+	}
+
+	.hero-video-ring svg {
+		width: 100%;
+		height: 100%;
+		overflow: visible;
+	}
+
+	.hero-video-ring text {
+		font-family: var(--font-family-system);
+		font-size: clamp(1px, 0.12vw, 1px);
+		font-weight: var(--font-weight-medium);
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+		fill: color-mix(in srgb, var(--color-text-primary) 88%, white 12%);
+	}
+
+	.hero-video-ring textPath {
+		dominant-baseline: middle;
+	}
+
+	@keyframes media-ring-spin {
+		from {
+			transform: translate(var(--hero-video-offset-x), var(--hero-video-offset-y)) rotate(0deg);
+		}
+		to {
+			transform: translate(var(--hero-video-offset-x), var(--hero-video-offset-y)) rotate(360deg);
+		}
 	}
 
 	.hero-cta:focus-visible {
