@@ -3,13 +3,13 @@
 		{
 			name: 'Beer & Wine',
 			price: '$13',
-			unit: '/ hr per person',
+			unit: '/ hr · per person',
 			items: ['Sauvignon blanc', 'Pinot grigio', 'Rosé', 'Domestic beers']
 		},
 		{
 			name: 'Call Package',
 			price: '$18',
-			unit: '/ hr per person',
+			unit: '/ hr · per person',
 			featured: false,
 			items: [
 				'White Claw Hard Seltzers',
@@ -19,12 +19,13 @@
 				'Bacardi Rum',
 				'Jim Beam Bourbon',
 				'Plus beer & wine'
-			]
+			],
+			image: '/images/call-drinks.png'
 		},
 		{
 			name: 'Premium Package',
 			price: '$22',
-			unit: '/ hr per person',
+			unit: '/ hr · per person',
 			featured: true,
 			items: [
 				'Prosecco',
@@ -34,7 +35,8 @@
 				'Bulleit Bourbon',
 				'Import beers',
 				'Plus full call package'
-			]
+			],
+			image: '/images/premium-drinks.png'
 		}
 	];
 
@@ -138,6 +140,11 @@
 								<li>{item}</li>
 							{/each}
 						</ul>
+						{#if pkg.image}
+							<div class="bev-image-wrapper">
+								<img src={pkg.image} alt="{pkg.name} selection" class="bev-image" />
+							</div>
+						{/if}
 					</div>
 				{/each}
 			</div>
@@ -364,6 +371,7 @@
 		display: flex;
 		flex-direction: column;
 		gap: var(--space-3, 12px);
+		overflow: hidden;
 	}
 
 	.bev-card.featured {
@@ -431,6 +439,23 @@
 		content: '· ';
 		color: var(--color-frosted-blue);
 		font-weight: 700;
+	}
+
+	.bev-image-wrapper {
+		margin-top: auto; /* pushes it to the bottom of the flex card */
+		padding-top: var(--space-4, 16px);
+		display: flex;
+		justify-content: center;
+		margin-bottom: -40px; /* pull the margin down to let the image overflow the padding */
+	}
+
+	.bev-image {
+		max-width: 100%;
+		height: auto;
+		object-fit: contain;
+		max-height: 200px; 
+		transform: translateY(20px);
+		/* filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1)); */
 	}
 
 	/* Stationed Menus */
