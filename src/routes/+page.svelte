@@ -2,6 +2,7 @@
 	import Home_Hero from '$lib/components_home/Hero.svelte';
 	import Destinations from '$lib/components_home/Destinations.svelte';
 	import OurYachts from '$lib/components_home/OurYachts.svelte';
+	import PlanYourTrip from '$lib/components_home/PlanYourTrip.svelte';
 </script>
 
 <svelte:head>
@@ -11,3 +12,4 @@
 <Home_Hero />
 <OurYachts />
 <Destinations />
+<PlanYourTrip />

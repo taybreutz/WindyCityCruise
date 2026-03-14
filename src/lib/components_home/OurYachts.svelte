@@ -42,8 +42,32 @@
 		}
 	];
 
+	const departurePoints = [
+		{
+			name: 'Burnham Harbor',
+			image: 'https://images.unsplash.com/photo-1494522855154-9297ac14b55f?w=400&q=80',
+			mapQuery: 'Burnham+Harbor,+Chicago,+IL'
+		},
+		{
+			name: 'Chicago River',
+			image: 'https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?w=400&q=80',
+			mapQuery: 'Chicago+River,+Chicago,+IL'
+		},
+		{
+			name: 'River North Marina',
+			image: 'https://images.unsplash.com/photo-1534430480872-3498386e7856?w=400&q=80',
+			mapQuery: 'River+North,+Chicago,+IL'
+		},
+		{
+			name: 'Navy Pier Marina',
+			image: 'https://images.unsplash.com/photo-1513622470522-26c3c8a854bc?w=400&q=80',
+			mapQuery: 'Navy+Pier,+Chicago,+IL'
+		}
+	];
+
 	let track: HTMLDivElement | undefined = $state(undefined);
 	let activeIndex = $state(0);
+	let departureView: 'photos' | 'map' = $state('photos');
 
 	function scrollToIndex(i: number) {
 		if (!track) return;
@@ -135,6 +159,62 @@
 				aria-label="Go to yacht {i + 1}"
 			></button>
 		{/each}
+	</div>
+
+	<div class="departures">
+		<div class="departures-top">
+			<h3 class="departures-heading">
+				<svg class="departures-icon" viewBox="0 0 24 24" aria-hidden="true">
+					<path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7Z" />
+					<circle cx="12" cy="9" r="2.5" />
+				</svg>
+				Our Departure Points
+			</h3>
+			<div class="departures-toggle">
+				<button
+					type="button"
+					class="toggle-btn"
+					class:active={departureView === 'photos'}
+					onclick={() => departureView = 'photos'}
+				>
+					<svg viewBox="0 0 24 24" aria-hidden="true">
+						<rect x="3" y="3" width="18" height="18" rx="2" />
+						<circle cx="8.5" cy="8.5" r="1.5" />
+						<path d="m21 15-5-5L5 21" />
+					</svg>
+					Photos
+				</button>
+				<button
+					type="button"
+					class="toggle-btn"
+					class:active={departureView === 'map'}
+					onclick={() => departureView = 'map'}
+				>
+					<svg viewBox="0 0 24 24" aria-hidden="true">
+						<path d="m9 18-6 3V7l6-3m0 14 6 3m-6-3V4m6 17 6-3V4l-6 3m0 14V7M9 4l6 3" />
+					</svg>
+					Map
+				</button>
+			</div>
+		</div>
+		<div class="departures-grid">
+			{#each departurePoints as point (point.name)}
+				<div class="departure-card">
+					{#if departureView === 'photos'}
+						<div class="departure-image" style="background-image: url({point.image})"></div>
+					{:else}
+						<iframe
+							class="departure-map"
+							title="{point.name} map"
+							src="https://www.google.com/maps/embed/v1/place?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q={point.mapQuery}&zoom=14&maptype=satellite"
+							loading="lazy"
+							referrerpolicy="no-referrer-when-downgrade"
+						></iframe>
+					{/if}
+					<span class="departure-name">{point.name}</span>
+				</div>
+			{/each}
+		</div>
 	</div>
 </section>
 
@@ -395,6 +475,131 @@
 
 		.yacht-card {
 			flex: 0 0 clamp(280px, 80vw, 480px);
+		}
+	}
+
+	/* Departure Points */
+	.departures-top {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		margin-bottom: var(--space-4, 16px);
+	}
+
+	.departures-toggle {
+		display: flex;
+		border: 1px solid var(--color-border-default);
+		border-radius: var(--radius-sm, 6px);
+		overflow: hidden;
+	}
+
+	.toggle-btn {
+		display: inline-flex;
+		align-items: center;
+		gap: 5px;
+		padding: 6px 14px;
+		border: none;
+		background: transparent;
+		color: var(--color-text-secondary);
+		font-family: var(--font-family-system, system-ui);
+		font-size: var(--font-size-xs, 12px);
+		font-weight: var(--font-weight-medium, 500);
+		cursor: pointer;
+		transition:
+			background var(--motion-duration-fast, 0.15s) var(--motion-ease-standard, ease),
+			color var(--motion-duration-fast, 0.15s) var(--motion-ease-standard, ease);
+	}
+
+	.toggle-btn + .toggle-btn {
+		border-left: 1px solid var(--color-border-default);
+	}
+
+	.toggle-btn svg {
+		width: 14px;
+		height: 14px;
+		fill: none;
+		stroke: currentColor;
+		stroke-width: 1.8;
+		stroke-linecap: round;
+		stroke-linejoin: round;
+	}
+
+	.toggle-btn:hover {
+		background: var(--color-bg-secondary);
+	}
+
+	.toggle-btn.active {
+		background: var(--color-frosted-blue);
+		color: #f9f2f0;
+	}
+
+	.toggle-btn.active svg {
+		stroke: #f9f2f0;
+	}
+
+	.departures {
+		max-width: 1360px;
+		margin: var(--space-8, 32px) auto 0;
+		padding: 0 clamp(var(--space-4, 16px), 3.5vw, var(--space-6, 24px));
+	}
+
+	.departures-heading {
+		display: flex;
+		align-items: center;
+		gap: 6px;
+		font-family: var(--font-family-system, system-ui);
+		font-size: var(--font-size-md, 16px);
+		font-weight: var(--font-weight-semibold, 600);
+		color: var(--color-text-primary);
+		margin: 0;
+	}
+
+	.departures-icon {
+		width: 20px;
+		height: 20px;
+		fill: none;
+		stroke: var(--color-frosted-blue);
+		stroke-width: 1.8;
+		stroke-linecap: round;
+		stroke-linejoin: round;
+	}
+
+	.departures-grid {
+		display: grid;
+		grid-template-columns: repeat(4, 1fr);
+		gap: var(--space-3, 12px);
+	}
+
+	.departure-card {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-2, 8px);
+		align-items: center;
+	}
+
+	.departure-image,
+	.departure-map {
+		width: 100%;
+		aspect-ratio: 16 / 10;
+		border-radius: var(--radius-md, 8px);
+		border: 1px solid var(--color-border-subtle);
+	}
+
+	.departure-image {
+		background-size: cover;
+		background-position: center;
+	}
+
+	.departure-name {
+		font-family: var(--font-family-system, system-ui);
+		font-size: var(--font-size-sm, 14px);
+		font-weight: var(--font-weight-medium, 500);
+		color: var(--color-text-primary);
+	}
+
+	@media (max-width: 640px) {
+		.departures-grid {
+			grid-template-columns: repeat(2, 1fr);
 		}
 	}
 </style>

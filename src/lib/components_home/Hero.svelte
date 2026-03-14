@@ -142,7 +142,7 @@
 
 	.hero-cta-primary {
 		background-color: var(--hero-accent);
-		color: var(--color-text-primary);
+		color: #f9f2f0;
 	}
 
 	.hero-cta-secondary {

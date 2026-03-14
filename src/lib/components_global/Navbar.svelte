@@ -20,7 +20,7 @@
 				</svg>
 			</a>
 			<a href="/contact" class="utility-link">Support</a>
-			<a href="/contact" class="utility-link">Sales: +1 (312) 555-BOAT</a>
+			<a href="tel:+13129710971" class="utility-link">Sales: +1 (312) 971-0971</a>
 			<a href="/contact" class="utility-link globe-link" aria-label="Language">
 				<svg viewBox="0 0 24 24" role="presentation" focusable="false">
 					<path
@@ -32,31 +32,6 @@
 	</div>
 	<div class="navbar-content">
 		<a href="/" class="logo" aria-label="Windy City Cruise home">
-			<svg class="logo-mark" viewBox="0 0 120 60" role="presentation" focusable="false">
-				<rect x="4" y="8" width="112" height="44" rx="12" class="flag-base" />
-				<rect x="4" y="18" width="112" height="7" class="flag-stripe" />
-				<rect x="4" y="35" width="112" height="7" class="flag-stripe" />
-
-				<path
-					class="anchor-shape"
-					d="M60 13a5 5 0 1 1 0 10 5 5 0 0 1 0-10Zm-2 12h4v14.8c0 2.9 2.4 5.2 5.3 5.2h4.5c-1.2 5.7-6.3 9.5-11.8 9.5S49.4 50.7 48.2 45h4.5c2.9 0 5.3-2.3 5.3-5.2V25Zm-10 9.8v4.2c0 1.8-1.4 3.2-3.2 3.2H38v-4h6V34.8h4Zm24 0v3.4h6v4h-6.8c-1.8 0-3.2-1.4-3.2-3.2v-4.2h4Z"
-				/>
-
-				<g class="star-group">
-					<path
-						d="M25 29.8l1.2 2.5 2.8.2-2.1 1.8.7 2.7-2.6-1.4-2.3 1.4.6-2.8-2-1.7 2.7-.2 1-2.5Z"
-					/>
-					<path
-						d="M43 29.8l1.1 2.5 2.8.2-2.1 1.8.8 2.7-2.6-1.4-2.3 1.4.6-2.8-2-1.7 2.7-.2 1-2.5Z"
-					/>
-					<path
-						d="M77 29.8l1.1 2.5 2.8.2-2.1 1.8.8 2.7-2.6-1.4-2.3 1.4.6-2.8-2-1.7 2.7-.2 1-2.5Z"
-					/>
-					<path
-						d="M95 29.8l1.1 2.5 2.8.2-2.1 1.8.8 2.7-2.6-1.4-2.3 1.4.6-2.8-2-1.7 2.7-.2 1-2.5Z"
-					/>
-				</g>
-			</svg>
 			<span class="logo-text">Windy City Cruise</span>
 		</a>
 
@@ -82,8 +57,8 @@
 		left: 0;
 		right: 0;
 		z-index: 200; /* sticky layer token */
-		background: var(--nav-bg);
-		border-bottom: 1px solid var(--nav-border);
+		background: var(--color-frosted-blue);
+		border-bottom: 1px solid rgba(249, 242, 240, 0.1);
 		backdrop-filter: var(--blur-glass);
 		-webkit-backdrop-filter: var(--blur-glass);
 		transition:
@@ -97,7 +72,7 @@
 	}
 
 	.utility-row {
-		border-bottom: 1px solid var(--divider-color);
+		border-bottom: 1px solid rgba(249, 242, 240, 0.1);
 	}
 
 	.utility-content {
@@ -114,7 +89,7 @@
 		font-size: var(--font-size-sm);
 		font-weight: var(--font-weight-regular);
 		line-height: 1;
-		color: var(--color-text-secondary);
+		color: rgba(249, 242, 240, 0.72);
 		text-decoration: none;
 		transition:
 			opacity var(--motion-duration-fast) var(--motion-ease-standard),
@@ -123,7 +98,7 @@
 
 	.utility-link:hover {
 		opacity: var(--state-hover-opacity);
-		color: var(--color-text-primary);
+		color: #f9f2f0;
 	}
 
 	.search-link,
@@ -154,7 +129,7 @@
 
 	.logo {
 		text-decoration: none;
-		color: var(--color-text-primary);
+		color: #f9f2f0;
 		display: inline-flex;
 		align-items: center;
 		gap: var(--space-3);
@@ -165,36 +140,14 @@
 		opacity: var(--state-hover-opacity);
 	}
 
-	.logo-mark {
-		width: 62px;
-		height: 31px;
-	}
-
-	.flag-base {
-		fill: #f9f2f0;
-		stroke: var(--color-border-default);
-		stroke-width: 1;
-	}
-
-	.flag-stripe {
-		fill: var(--color-frosted-blue);
-	}
-
-	.anchor-shape {
-		fill: var(--color-prussian-blue);
-	}
-
-	.star-group {
-		fill: #d94747;
-	}
-
 	.logo-text {
-		font-family: var(--font-family-system);
-		font-size: var(--font-size-lg);
-		font-weight: 900;
-		line-height: var(--line-height-tight);
-		letter-spacing: 0.04em;
-		color: var(--color-text-primary);
+		font-family: 'The Nautigal', cursive;
+		font-size: clamp(30px, 2.6vw, 38px);
+		font-weight: 700;
+		line-height: 1;
+		letter-spacing: 0.01em;
+		color: #f9f2f0;
+		white-space: nowrap;
 	}
 
 	.nav-links {
@@ -209,7 +162,7 @@
 		font-size: var(--font-size-sm);
 		font-weight: var(--font-weight-regular);
 		line-height: var(--line-height-default);
-		color: var(--color-text-secondary);
+		color: rgba(249, 242, 240, 0.82);
 		text-decoration: none;
 		transition:
 			color var(--motion-duration-fast) var(--motion-ease-standard),
@@ -217,7 +170,7 @@
 	}
 
 	.nav-link:hover {
-		color: var(--color-text-primary);
+		color: #f9f2f0;
 		text-decoration: none;
 	}
 
@@ -252,14 +205,14 @@
 	}
 
 	.action-button-secondary {
-		color: var(--color-text-primary);
-		background: var(--color-surface);
-		border-color: var(--color-border-strong);
+		color: #f9f2f0;
+		background: rgba(249, 242, 240, 0.12);
+		border-color: rgba(249, 242, 240, 0.28);
 	}
 
 	.action-button-primary {
-		background: var(--hero-accent);
-		color: var(--color-text-primary);
+		background: #f9f2f0;
+		color: var(--color-frosted-blue);
 	}
 
 	.action-button:hover {
@@ -308,11 +261,6 @@
 
 		.logo-text {
 			font-size: 16px;
-		}
-
-		.logo-mark {
-			width: 44px;
-			height: 22px;
 		}
 
 		.buttons-container {

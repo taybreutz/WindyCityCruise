@@ -124,7 +124,7 @@
 
 <style>
 	.footer {
-		background-color: var(--color-prussian-blue);
+		background-color: var(--color-frosted-blue);
 		color: var(--color-text-inverse);
 		padding: var(--space-10) var(--space-5) var(--space-6);
 	}
