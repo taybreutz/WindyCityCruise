@@ -1,5 +1,8 @@
 <script lang="ts">
+	import QuoteModal from './QuoteModal.svelte';
+
 	let scrolled = $state(false);
+	let quoteOpen = $state(false);
 
 	$effect(() => {
 		const handleScroll = () => {
@@ -19,7 +22,7 @@
 					<path d="M15.8 15.8l5.4 5.4m-2.9-10a7.1 7.1 0 1 1-14.2 0 7.1 7.1 0 0 1 14.2 0Z" />
 				</svg>
 			</a>
-			<a href="/contact" class="utility-link">Support</a>
+			<a href="/contact" class="utility-link">Contact Us</a>
 			<a href="tel:+13129710971" class="utility-link">Sales: +1 (312) 971-0971</a>
 			<a href="/contact" class="utility-link globe-link" aria-label="Language">
 				<svg viewBox="0 0 24 24" role="presentation" focusable="false">
@@ -36,19 +39,21 @@
 		</a>
 
 		<div class="nav-links">
-			<a href="/rentals" class="nav-link">Rentals</a>
-			<a href="/boat-club" class="nav-link">Boat Club</a>
-			<a href="/luxury" class="nav-link">Luxury</a>
-			<a href="/wakesurfing" class="nav-link">Experiences</a>
-			<a href="/about" class="nav-link">Company</a>
+			<a href="/yachts" class="nav-link">Yachts</a>
+			<a href="/experiences" class="nav-link">Experiences</a>
+			<a href="/catering" class="nav-link">Catering</a>
+			<a href="/about-us" class="nav-link">About</a>
+			<a href="/faq" class="nav-link">FAQ</a>
 		</div>
 
 		<div class="buttons-container">
-			<a href="/contact" class="action-button action-button-secondary">Contact Us</a>
+			<button type="button" class="action-button action-button-secondary" onclick={() => quoteOpen = true}>Request a Quote</button>
 			<a href="/book" class="action-button action-button-primary">Book now</a>
 		</div>
 	</div>
 </nav>
+
+<QuoteModal bind:open={quoteOpen} />
 
 <style>
 	.navbar {
@@ -142,7 +147,7 @@
 
 	.logo-text {
 		font-family: 'The Nautigal', cursive;
-		font-size: clamp(30px, 2.6vw, 38px);
+		font-size: clamp(34px, 2.8vw, 42px);
 		font-weight: 700;
 		line-height: 1;
 		letter-spacing: 0.01em;
@@ -160,9 +165,9 @@
 	.nav-link {
 		font-family: var(--font-family-system);
 		font-size: var(--font-size-sm);
-		font-weight: var(--font-weight-regular);
+		font-weight: var(--font-weight-medium);
 		line-height: var(--line-height-default);
-		color: rgba(249, 242, 240, 0.82);
+		color: rgba(249, 242, 240, 0.88);
 		text-decoration: none;
 		transition:
 			color var(--motion-duration-fast) var(--motion-ease-standard),

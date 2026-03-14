@@ -20,6 +20,29 @@
 				<a href="/rentals" class="hero-cta hero-cta-primary">View All Experiences</a>
 				<a href="/boat-club" class="hero-cta hero-cta-secondary">How It Works</a>
 			</div>
+
+		</div>
+
+		<div class="hero-kpis">
+			<div class="kpi">
+				<span class="kpi-value">20+</span>
+				<span class="kpi-label">Years in Business</span>
+			</div>
+			<div class="kpi-divider"></div>
+			<div class="kpi">
+				<span class="kpi-value">5</span>
+				<span class="kpi-label">Large Yachts</span>
+			</div>
+			<div class="kpi-divider"></div>
+			<div class="kpi">
+				<span class="kpi-value">1-200</span>
+				<span class="kpi-label">Guest Capacity</span>
+			</div>
+			<div class="kpi-divider"></div>
+			<div class="kpi">
+				<span class="kpi-value">4</span>
+				<span class="kpi-label">Departure Points</span>
+			</div>
 		</div>
 	</div>
 	<div class="hero-media" aria-hidden="true">
@@ -161,6 +184,50 @@
 		transform: scale(0.98);
 	}
 
+	.hero-kpis {
+		position: absolute;
+		bottom: clamp(var(--space-4, 16px), 3vh, var(--space-6, 24px));
+		left: clamp(var(--space-4, 16px), 3.5vw, var(--space-6, 24px));
+		display: flex;
+		align-items: center;
+		gap: clamp(16px, 2vw, 28px);
+		padding: 14px 20px;
+		background: rgba(10, 37, 64, 0.06);
+		border: 1px solid rgba(10, 37, 64, 0.08);
+		border-radius: var(--radius-md, 8px);
+		backdrop-filter: blur(6px);
+		z-index: 3;
+	}
+
+	.kpi {
+		display: flex;
+		flex-direction: column;
+		gap: 2px;
+	}
+
+	.kpi-value {
+		font-family: var(--font-family-system, system-ui);
+		font-size: clamp(20px, 1.8vw, 28px);
+		font-weight: 800;
+		line-height: 1;
+		letter-spacing: -0.02em;
+		color: var(--color-text-primary);
+	}
+
+	.kpi-label {
+		font-family: var(--font-family-system, system-ui);
+		font-size: clamp(10px, 0.7vw, 12px);
+		font-weight: var(--font-weight-medium, 500);
+		color: var(--color-text-secondary);
+		letter-spacing: 0.02em;
+	}
+
+	.kpi-divider {
+		width: 1px;
+		height: 32px;
+		background: rgba(10, 37, 64, 0.12);
+	}
+
 	.hero-media {
 		position: absolute;
 		inset: 0;
@@ -294,6 +361,19 @@
 			min-height: 50px;
 			padding: 0 20px;
 			font-size: 16px;
+		}
+
+		.hero-kpis {
+			position: static;
+			display: grid;
+			grid-template-columns: 1fr 1fr;
+			gap: 12px;
+			padding: 12px 16px;
+			margin-top: var(--space-4, 16px);
+		}
+
+		.kpi-divider {
+			display: none;
 		}
 	}
 </style>

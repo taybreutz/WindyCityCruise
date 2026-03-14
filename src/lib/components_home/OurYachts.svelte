@@ -1,44 +1,36 @@
 <script lang="ts">
 	const yachts = [
 		{
-			name: "The Sophisticated Lady",
+			name: "57' Power Catamaran",
 			capacity: 49,
-			length: "55'",
-			tagline: 'Intimate cruises with skyline views',
-			image: 'https://images.unsplash.com/photo-1567899378494-47b22a2ae96a?w=1200&q=80',
+			length: "57'",
+			tagline: 'Perfect for intimate gatherings & day cruises',
+			image: 'https://res.cloudinary.com/dlobqp00u/image/upload/w_1600,q_auto,f_auto/v1771256209/chicago-boat-rental-57ft-power-catamaran.webp',
 			rate: 'From $337/hr'
 		},
 		{
-			name: 'Chicago Spirit',
-			capacity: 100,
-			length: "72'",
-			tagline: 'Corporate events & celebrations',
-			image: 'https://images.unsplash.com/photo-1605281317010-fe5ffe798166?w=1200&q=80',
-			rate: 'From $475/hr'
-		},
-		{
-			name: 'Lake Queen',
+			name: "72' Classic Chris Craft",
 			capacity: 49,
-			length: "56'",
-			tagline: 'Premium sunset cruises',
-			image: 'https://images.unsplash.com/photo-1569263979104-865ab7cd8d13?w=1200&q=80',
+			length: "72'",
+			tagline: 'Iconic vintage yacht with timeless elegance',
+			image: 'https://res.cloudinary.com/dlobqp00u/image/upload/w_1600,q_auto,f_auto/v1771256386/chicago-boat-rental-72ft-classic-chris-craft-sophisticated-lady.webp',
 			rate: 'From $362/hr'
 		},
 		{
-			name: 'Windy City Voyager',
-			capacity: 150,
-			length: "90'",
-			tagline: 'Large-scale events on the water',
-			image: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=1200&q=80',
-			rate: 'From $625/hr'
+			name: "75' Power Catamaran",
+			capacity: 100,
+			length: "75'",
+			tagline: 'Corporate events & milestone celebrations',
+			image: 'https://res.cloudinary.com/dlobqp00u/image/upload/w_1600,q_auto,f_auto/v1772565318/1772513966043-423-IMG_2785_dekeoz.webp',
+			rate: 'From $475/hr'
 		},
 		{
-			name: 'Navy Pier Dreamer',
+			name: "85' Power Catamaran",
 			capacity: 200,
-			length: "110'",
+			length: "85'",
 			tagline: 'The ultimate wedding & gala yacht',
-			image: 'https://images.unsplash.com/photo-1540946485063-a40da27545f8?w=1200&q=80',
-			rate: 'From $850/hr'
+			image: 'https://res.cloudinary.com/dlobqp00u/image/upload/w_1600/v1769703495/b10261dd-6987-4c43-841e-3a289b7ee719_tlvuze.jpg',
+			rate: 'From $625/hr'
 		}
 	];
 
@@ -68,17 +60,22 @@
 	let track: HTMLDivElement | undefined = $state(undefined);
 	let activeIndex = $state(0);
 	let departureView: 'photos' | 'map' = $state('photos');
+	let isScrolling = false;
+	let scrollTimer: ReturnType<typeof setTimeout>;
 
 	function scrollToIndex(i: number) {
 		if (!track) return;
 		const cards = track.querySelectorAll('.yacht-card');
 		if (!cards[i]) return;
-		(cards[i] as HTMLElement).scrollIntoView({ behavior: 'smooth', inline: 'start', block: 'nearest' });
+		isScrolling = true;
 		activeIndex = i;
+		(cards[i] as HTMLElement).scrollIntoView({ behavior: 'smooth', inline: 'start', block: 'nearest' });
+		clearTimeout(scrollTimer);
+		scrollTimer = setTimeout(() => { isScrolling = false; }, 600);
 	}
 
 	function onScroll() {
-		if (!track) return;
+		if (!track || isScrolling) return;
 		const cards = track.querySelectorAll('.yacht-card');
 		const trackLeft = track.scrollLeft;
 		let closest = 0;
@@ -231,6 +228,7 @@
 		max-width: 1360px;
 		margin: 0 auto;
 		padding-left: clamp(var(--space-4, 16px), 3.5vw, var(--space-6, 24px));
+		padding-right: clamp(var(--space-4, 16px), 3.5vw, var(--space-6, 24px));
 	}
 
 	.yachts-sidebar {
@@ -344,11 +342,6 @@
 		transition: box-shadow var(--motion-duration-default, 0.3s) var(--motion-ease-standard, ease);
 	}
 
-	.yacht-card:hover {
-		box-shadow:
-			0 16px 40px rgba(2, 8, 23, 0.12),
-			0 4px 12px rgba(2, 8, 23, 0.08);
-	}
 
 	.yacht-card-image {
 		position: relative;
