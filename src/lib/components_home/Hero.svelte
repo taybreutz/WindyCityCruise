@@ -191,11 +191,6 @@
 		display: flex;
 		align-items: center;
 		gap: clamp(16px, 2vw, 28px);
-		padding: 14px 20px;
-		background: rgba(10, 37, 64, 0.06);
-		border: 1px solid rgba(10, 37, 64, 0.08);
-		border-radius: var(--radius-md, 8px);
-		backdrop-filter: blur(6px);
 		z-index: 3;
 	}
 
@@ -211,21 +206,22 @@
 		font-weight: 800;
 		line-height: 1;
 		letter-spacing: -0.02em;
-		color: var(--color-text-primary);
+		color: var(--color-frosted-blue, #014cba);
 	}
 
 	.kpi-label {
 		font-family: var(--font-family-system, system-ui);
 		font-size: clamp(10px, 0.7vw, 12px);
 		font-weight: var(--font-weight-medium, 500);
-		color: var(--color-text-secondary);
+		color: var(--color-frosted-blue, #014cba);
 		letter-spacing: 0.02em;
+		opacity: 0.7;
 	}
 
 	.kpi-divider {
 		width: 1px;
 		height: 32px;
-		background: rgba(10, 37, 64, 0.12);
+		background: rgba(1, 76, 186, 0.2);
 	}
 
 	.hero-media {
