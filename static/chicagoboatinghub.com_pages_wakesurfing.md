@@ -1,6 +1,6 @@
 ---
 url: "https://chicagoboatinghub.com/pages/wakesurfing"
-title: "Wakesurfing – Chicago Boating Hub"
+title: "Wakesurfing – Windy City Cruise"
 ---
 
 Cart
@@ -44,7 +44,7 @@ The best days are spent on the lake.
 [Learn More](https://laketownsurf.com/)
 
 
-###### _All companies featured on Chicago Boating Hub are selected by our team. When you buy something through our retail links, we may earn an affiliate commission._
+###### _All companies featured on Windy City Cruise are selected by our team. When you buy something through our retail links, we may earn an affiliate commission._
 
 - Choosing a selection results in a full page refresh.
 - Opens in a new window.

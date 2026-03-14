@@ -31,7 +31,7 @@
 		</div>
 	</div>
 	<div class="navbar-content">
-		<a href="/" class="logo" aria-label="Chicago Boating Hub home">
+		<a href="/" class="logo" aria-label="Windy City Cruise home">
 			<svg class="logo-mark" viewBox="0 0 120 60" role="presentation" focusable="false">
 				<rect x="4" y="8" width="112" height="44" rx="12" class="flag-base" />
 				<rect x="4" y="18" width="112" height="7" class="flag-stripe" />
@@ -57,7 +57,7 @@
 					/>
 				</g>
 			</svg>
-			<span class="logo-text">CHICAGO BOATING HUB</span>
+			<span class="logo-text">Windy City Cruise</span>
 		</a>
 
 		<div class="nav-links">

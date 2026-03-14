@@ -1,6 +1,6 @@
 ---
 url: "https://chicagoboatinghub.com/pages/chicago-boat-club"
-title: "Chicago Boat Club | Hassle-Free Boating on Lake Michigan – Chicago Boating Hub"
+title: "Chicago Boat Club | Hassle-Free Boating on Lake Michigan – Windy City Cruise"
 ---
 
 Cart
@@ -247,7 +247,7 @@ hCaptcha
 
 Calendly
 
-###### _All companies featured on Chicago Boating Hub are selected by our team. When you buy something through our retail links, we may earn an affiliate commission._
+###### _All companies featured on Windy City Cruise are selected by our team. When you buy something through our retail links, we may earn an affiliate commission._
 
 - Choosing a selection results in a full page refresh.
 - Opens in a new window.

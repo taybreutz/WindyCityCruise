@@ -1,6 +1,6 @@
 ---
 url: "https://chicagoboatinghub.com/pages/luxury-yachts"
-title: "Luxury Yacht Charters – Chicago Boating Hub"
+title: "Luxury Yacht Charters – Windy City Cruise"
 ---
 
 Cart
@@ -71,7 +71,7 @@ Discover the good life!
 
 NaN / of-Infinity
 
-###### _All companies featured on Chicago Boating Hub are selected by our team. When you buy something through our retail links, we may earn an affiliate commission._
+###### _All companies featured on Windy City Cruise are selected by our team. When you buy something through our retail links, we may earn an affiliate commission._
 
 - Choosing a selection results in a full page refresh.
 - Opens in a new window.

@@ -1,6 +1,6 @@
 ---
 url: "https://chicagoboatinghub.com/"
-title: "Chicago Boating Hub | Boat Rentals & Charters in the Playpen"
+title: "Windy City Cruise | Boat Rentals & Charters in the Playpen"
 ---
 
 Cart
@@ -39,12 +39,12 @@ Your browser does not support HTML5 video.
 [CHICAGO BOAT CLUB](https://chicagoboatinghub.com/pages/chicago-boat-club)
 
 
-About Chicago boating hub
+About Windy City Cruise
 
 
 ## Why Choose Us?
 
-Chicago Boating Hub is a boat rental company that specializes in yacht rentals, memberships, and corporate events for up to 150 passengers. Offering over 30 iconic vessels from 37' sport cruisers to 72' luxurious yachts, our teams bring 20+ years of boating and hospitality experience, providing the best boat rentals in Chicago.
+Windy City Cruise is a boat rental company that specializes in yacht rentals, memberships, and corporate events for up to 150 passengers. Offering over 30 iconic vessels from 37' sport cruisers to 72' luxurious yachts, our teams bring 20+ years of boating and hospitality experience, providing the best boat rentals in Chicago.
 
 ## THE FLEET
 

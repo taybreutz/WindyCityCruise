@@ -146,7 +146,7 @@
 </script>
 
 <svelte:head>
-	<title>Checkout - Chicago Boating Hub</title>
+	<title>Checkout - Windy City Cruise</title>
 </svelte:head>
 
 <div class="checkout-page">

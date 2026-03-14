@@ -1,6 +1,6 @@
 ---
 url: "https://chicagoboatinghub.com/pages/about-us"
-title: "\n      About Us\n – Chicago Boating Hub"
+title: "\n      About Us\n – Windy City Cruise"
 ---
 
 [Skip to content](https://chicagoboatinghub.com/pages/about-us#MainContent)

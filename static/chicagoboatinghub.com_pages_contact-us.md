@@ -1,6 +1,6 @@
 ---
 url: "https://chicagoboatinghub.com/pages/contact-us"
-title: "Contact Us – Chicago Boating Hub"
+title: "Contact Us – Windy City Cruise"
 ---
 
 Cart

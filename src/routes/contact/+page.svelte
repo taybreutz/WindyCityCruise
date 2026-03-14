@@ -29,7 +29,7 @@
 </script>
 
 <svelte:head>
-	<title>Contact Us - Chicago Boating Hub</title>
+	<title>Contact Us - Windy City Cruise</title>
 </svelte:head>
 
 <main class="page">

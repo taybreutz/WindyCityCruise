@@ -1,6 +1,6 @@
 ---
 url: "https://chicagoboatinghub.com/blogs/news"
-title: "\n      News\n – Chicago Boating Hub"
+title: "\n      News\n – Windy City Cruise"
 ---
 
 [Skip to content](https://chicagoboatinghub.com/blogs/news#MainContent)

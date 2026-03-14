@@ -1,6 +1,6 @@
 ---
 url: "https://chicagoboatinghub.com/pages/chicago-boat-rentals-charters"
-title: "\n      Chicago Boat Rentals & Charters\n – Chicago Boating Hub"
+title: "\n      Chicago Boat Rentals & Charters\n – Windy City Cruise"
 ---
 
 Cart
@@ -70,7 +70,7 @@ NaN / of-Infinity
 
 ![](https://chicagoboatinghub.com/cdn/shop/files/DJI_0986.jpg?v=1701788934&width=3000)
 
-###### _All companies featured on Chicago Boating Hub are selected by our team. When you buy something through our retail links, we may earn an affiliate commission._
+###### _All companies featured on Windy City Cruise are selected by our team. When you buy something through our retail links, we may earn an affiliate commission._
 
 - Choosing a selection results in a full page refresh.
 - Opens in a new window.

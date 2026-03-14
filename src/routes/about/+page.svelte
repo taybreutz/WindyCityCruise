@@ -2,7 +2,7 @@
 </script>
 
 <svelte:head>
-	<title>About Us - Chicago Boating Hub</title>
+	<title>About Us - Windy City Cruise</title>
 </svelte:head>
 
 <main class="page">

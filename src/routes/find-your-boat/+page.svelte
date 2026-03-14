@@ -318,7 +318,7 @@
 </script>
 
 <svelte:head>
-	<title>Find Your Boat Results | Chicago Boating Hub</title>
+	<title>Find Your Boat Results | Windy City Cruise</title>
 </svelte:head>
 
 <section class="results-page">

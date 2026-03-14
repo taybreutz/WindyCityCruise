@@ -2,7 +2,7 @@
 </script>
 
 <svelte:head>
-	<title>Wakesurfing - Chicago Boating Hub</title>
+	<title>Wakesurfing - Windy City Cruise</title>
 </svelte:head>
 
 <main class="page">
@@ -45,7 +45,7 @@
 	<section class="content-section content-section--alt">
 		<div class="content-container centered">
 			<p class="disclaimer">
-				All companies featured on Chicago Boating Hub are selected by our team. When you buy
+				All companies featured on Windy City Cruise are selected by our team. When you buy
 				something through our retail links, we may earn an affiliate commission.
 			</p>
 		</div>

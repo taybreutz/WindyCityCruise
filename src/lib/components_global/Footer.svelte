@@ -45,7 +45,7 @@
 			<!-- Brand Column -->
 			<div class="footer-brand">
 				<a href="/" class="footer-logo" itemprop="name">
-					Chicago Boating Hub
+					Windy City Cruise
 				</a>
 				<p class="footer-tagline" itemprop="description">
 					Chicago's premier boat rental company offering yacht rentals, memberships, and
@@ -113,7 +113,7 @@
 		<!-- Bottom Bar -->
 		<div class="footer-bottom">
 			<p class="footer-copyright">
-				&copy; {currentYear} Chicago Boating Hub. All rights reserved.
+				&copy; {currentYear} Windy City Cruise. All rights reserved.
 			</p>
 			<address class="footer-location" itemprop="address" itemscope itemtype="https://schema.org/PostalAddress">
 				<span itemprop="addressLocality">Chicago</span>, <span itemprop="addressRegion">IL</span>

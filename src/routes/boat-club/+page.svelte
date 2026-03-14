@@ -93,7 +93,7 @@
 </script>
 
 <svelte:head>
-	<title>Chicago Boat Club - Chicago Boating Hub</title>
+	<title>Chicago Boat Club - Windy City Cruise</title>
 </svelte:head>
 
 <main class="page">

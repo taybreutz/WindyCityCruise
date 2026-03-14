@@ -36,7 +36,7 @@
 </script>
 
 <svelte:head>
-	<title>Chicago Boat Rentals & Luxury Yacht Charters - Chicago Boating Hub</title>
+	<title>Chicago Boat Rentals & Luxury Yacht Charters - Windy City Cruise</title>
 </svelte:head>
 
 <main class="page">
