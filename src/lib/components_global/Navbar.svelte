@@ -171,7 +171,7 @@
 	}
 
 	.flag-base {
-		fill: #ffffff;
+		fill: #f9f2f0;
 		stroke: var(--color-border-default);
 		stroke-width: 1;
 	}

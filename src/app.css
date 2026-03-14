@@ -32,7 +32,7 @@ body {
   min-height: 100vh;
   line-height: var(--line-height-default, 1.45);
   font-family: var(--font-family-system, -apple-system, BlinkMacSystemFont, sans-serif);
-  background: var(--color-bg-primary, #f8f9fa);
+  background: var(--color-bg-primary, #f9f2f0);
   color: var(--color-text-primary, #0a2540);
 }
 
@@ -99,22 +99,22 @@ h6 {
   /* primary ink / anchors */
   --color-bright-teal-blue: #0077b6ff;
   /* primary accent */
-  --color-frosted-blue: #90e0efff;
+  --color-frosted-blue: #014cba;
   /* soft UI accents / fills */
-  --color-bright-snow: #f8f9faff;
+  --color-bright-snow: #f9f2f0;
   /* primary background */
-  --color-platinum: #f2f4f6ff;
+  --color-platinum: #f9f2f0;
   /* secondary background */
 
   /* Semantic Mapping */
   --color-bg-primary: var(--color-bright-snow);
   --color-bg-secondary: var(--color-platinum);
-  --color-bg-elevated: rgba(248, 249, 250, 0.92);
+  --color-bg-elevated: rgba(249, 242, 240, 0.92);
 
   --color-text-primary: var(--color-prussian-blue);
   --color-text-secondary: rgba(10, 37, 64, 0.72);
   --color-text-tertiary: rgba(10, 37, 64, 0.48);
-  --color-text-inverse: #ffffff;
+  --color-text-inverse: #f9f2f0;
 
   --color-border-default: rgba(10, 37, 64, 0.12);
   --color-border-strong: rgba(10, 37, 64, 0.24);
@@ -234,7 +234,7 @@ h6 {
   --toggle-height: 24px;
   --toggle-bg-off: var(--color-border-strong);
   --toggle-bg-on: var(--color-accent-primary);
-  --toggle-thumb: #ffffff;
+  --toggle-thumb: #f9f2f0;
 
   /* Cards */
   --card-bg: var(--color-bg-elevated);

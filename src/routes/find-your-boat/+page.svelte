@@ -548,12 +548,12 @@
 	}
 
 	.map-layout :global(.boat-popup-frame .mapboxgl-popup-tip) {
-		border-top-color: #ffffff;
+		border-top-color: #f9f2f0;
 	}
 
 	.map-layout :global(.boat-popup-card) {
 		width: 260px;
-		background: #ffffff;
+		background: #f9f2f0;
 	}
 
 	.map-layout :global(.boat-popup-image) {
@@ -593,7 +593,7 @@
 		font-size: 13px;
 		font-weight: var(--font-weight-semibold);
 		text-decoration: none;
-		color: #fff;
+		color: #f9f2f0;
 		background: linear-gradient(135deg, #0f5f9a 0%, #1843a8 100%);
 		transition: opacity var(--motion-duration-fast) var(--motion-ease-standard);
 	}
@@ -659,7 +659,7 @@
 		gap: var(--space-3);
 		border: 1px solid var(--color-border-subtle);
 		border-radius: var(--radius-md);
-		background: #fff;
+		background: #f9f2f0;
 		padding: var(--space-2);
 	}
 
@@ -714,7 +714,7 @@
 		font-size: 12px;
 		font-weight: var(--font-weight-semibold);
 		text-decoration: none;
-		color: #fff;
+		color: #f9f2f0;
 		background: linear-gradient(135deg, #0f5f9a 0%, #1843a8 100%);
 		transition: opacity var(--motion-duration-fast) var(--motion-ease-standard);
 	}
