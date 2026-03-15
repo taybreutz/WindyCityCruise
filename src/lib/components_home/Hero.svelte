@@ -1,5 +1,6 @@
 <script lang="ts">
-	const mediaRingText = 'The Playpen • Chicago River • Monroe Harbor • Navy Pier Marina • Chicago, Illinois • ';
+	const mediaRingText =
+		'The Playpen • Chicago River • Monroe Harbor • Navy Pier Marina • Chicago, Illinois • ';
 	const mediaRingContent = mediaRingText.repeat(6);
 </script>
 
@@ -20,7 +21,6 @@
 				<a href="/rentals" class="hero-cta hero-cta-primary">View All Experiences</a>
 				<a href="/boat-club" class="hero-cta hero-cta-secondary">How It Works</a>
 			</div>
-
 		</div>
 
 		<div class="hero-kpis">
@@ -238,7 +238,7 @@
 		right: 0;
 		bottom: 0;
 		transform: translate(var(--hero-video-offset-x), var(--hero-video-offset-y));
-		object-fit: cover;
+		object-fit: contain;
 		border-radius: 999px;
 		box-shadow: var(--shadow-2);
 		filter: saturate(1.08) contrast(1.02);

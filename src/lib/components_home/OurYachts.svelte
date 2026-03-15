@@ -1,11 +1,14 @@
 <script lang="ts">
+	import { scale } from 'svelte/transition';
+
 	const yachts = [
 		{
 			name: "57' Power Catamaran",
 			capacity: 49,
 			length: "57'",
 			tagline: 'Perfect for intimate gatherings & day cruises',
-			image: 'https://res.cloudinary.com/dlobqp00u/image/upload/w_1600,q_auto,f_auto/v1771256209/chicago-boat-rental-57ft-power-catamaran.webp',
+			image:
+				'https://res.cloudinary.com/dlobqp00u/image/upload/w_1600,q_auto,f_auto/v1771256209/chicago-boat-rental-57ft-power-catamaran.webp',
 			rate: 'From $337/hr'
 		},
 		{
@@ -13,7 +16,8 @@
 			capacity: 49,
 			length: "72'",
 			tagline: 'Iconic vintage yacht with timeless elegance',
-			image: 'https://res.cloudinary.com/dlobqp00u/image/upload/w_1600,q_auto,f_auto/v1771256386/chicago-boat-rental-72ft-classic-chris-craft-sophisticated-lady.webp',
+			image:
+				'https://res.cloudinary.com/dlobqp00u/image/upload/w_1600,q_auto,f_auto/v1771256386/chicago-boat-rental-72ft-classic-chris-craft-sophisticated-lady.webp',
 			rate: 'From $362/hr'
 		},
 		{
@@ -21,7 +25,8 @@
 			capacity: 100,
 			length: "75'",
 			tagline: 'Corporate events & milestone celebrations',
-			image: 'https://res.cloudinary.com/dlobqp00u/image/upload/w_1600,q_auto,f_auto/v1772565318/1772513966043-423-IMG_2785_dekeoz.webp',
+			image:
+				'https://res.cloudinary.com/dlobqp00u/image/upload/w_1600,q_auto,f_auto/v1772565318/1772513966043-423-IMG_2785_dekeoz.webp',
 			rate: 'From $475/hr'
 		},
 		{
@@ -29,7 +34,8 @@
 			capacity: 200,
 			length: "85'",
 			tagline: 'The ultimate wedding & gala yacht',
-			image: 'https://res.cloudinary.com/dlobqp00u/image/upload/w_1600/v1769703495/b10261dd-6987-4c43-841e-3a289b7ee719_tlvuze.jpg',
+			image:
+				'https://res.cloudinary.com/dlobqp00u/image/upload/w_1600/v1769703495/b10261dd-6987-4c43-841e-3a289b7ee719_tlvuze.jpg',
 			rate: 'From $625/hr'
 		}
 	];
@@ -65,18 +71,32 @@
 
 	function scrollToIndex(i: number) {
 		if (!track) return;
-		const cards = track.querySelectorAll('.yacht-card');
+		const cards = track.querySelectorAll('.yacht-card-wrapper');
 		if (!cards[i]) return;
 		isScrolling = true;
 		activeIndex = i;
-		(cards[i] as HTMLElement).scrollIntoView({ behavior: 'smooth', inline: 'start', block: 'nearest' });
+		(cards[i] as HTMLElement).scrollIntoView({
+			behavior: 'smooth',
+			inline: 'start',
+			block: 'nearest'
+		});
 		clearTimeout(scrollTimer);
-		scrollTimer = setTimeout(() => { isScrolling = false; }, 600);
+		scrollTimer = setTimeout(() => {
+			isScrolling = false;
+		}, 600);
+	}
+
+	function nextYacht() {
+		scrollToIndex((activeIndex + 1) % yachts.length);
+	}
+
+	function prevYacht() {
+		scrollToIndex((activeIndex - 1 + yachts.length) % yachts.length);
 	}
 
 	function onScroll() {
 		if (!track || isScrolling) return;
-		const cards = track.querySelectorAll('.yacht-card');
+		const cards = track.querySelectorAll('.yacht-card-wrapper');
 		const trackLeft = track.scrollLeft;
 		let closest = 0;
 		let closestDist = Infinity;
@@ -96,7 +116,8 @@
 		<div class="yachts-sidebar">
 			<h2 class="yachts-heading">Our Yachts</h2>
 			<p class="yachts-subtext">
-				From intimate gatherings to large-scale celebrations — find the perfect vessel for your crew.
+				From intimate gatherings to large-scale celebrations — find the perfect vessel for your
+				crew.
 			</p>
 			<div class="yachts-nav-list">
 				{#each yachts as yacht, i (yacht.name)}
@@ -119,30 +140,55 @@
 			</div>
 		</div>
 
-		<div class="yachts-track" bind:this={track} onscroll={onScroll}>
-			{#each yachts as yacht, i (yacht.name)}
-				<a href="/rentals" class="yacht-card">
-					<div class="yacht-card-image" style="background-image: url({yacht.image})">
-						<div class="yacht-card-badge">{yacht.length}</div>
+		<div class="yachts-track-area">
+			<div class="yachts-track" bind:this={track} onscroll={onScroll}>
+				{#each yachts as yacht, i (yacht.name)}
+					<div class="yacht-card-wrapper">
+						<a href="/rentals" class="yacht-card">
+							<div class="yacht-card-image" style="background-image: url({yacht.image})">
+								<div class="yacht-card-badge">{yacht.length}</div>
+							</div>
+							<div class="yacht-card-body">
+								<div class="yacht-card-top">
+									<h3 class="yacht-card-name">{yacht.name}</h3>
+									<p class="yacht-card-tagline">{yacht.tagline}</p>
+								</div>
+								<div class="yacht-card-bottom">
+									<span class="yacht-card-capacity">
+										<svg viewBox="0 0 24 24" aria-hidden="true">
+											<circle cx="12" cy="7" r="3.2"></circle>
+											<path d="M6.5 19.5c0-2.9 2.4-5.3 5.5-5.3s5.5 2.4 5.5 5.3"></path>
+										</svg>
+										Up to {yacht.capacity} guests
+									</span>
+									<span class="yacht-card-rate">{yacht.rate}</span>
+								</div>
+							</div>
+						</a>
 					</div>
-					<div class="yacht-card-body">
-						<div class="yacht-card-top">
-							<h3 class="yacht-card-name">{yacht.name}</h3>
-							<p class="yacht-card-tagline">{yacht.tagline}</p>
-						</div>
-						<div class="yacht-card-bottom">
-							<span class="yacht-card-capacity">
-								<svg viewBox="0 0 24 24" aria-hidden="true">
-									<circle cx="12" cy="7" r="3.2"></circle>
-									<path d="M6.5 19.5c0-2.9 2.4-5.3 5.5-5.3s5.5 2.4 5.5 5.3"></path>
-								</svg>
-								Up to {yacht.capacity} guests
-							</span>
-							<span class="yacht-card-rate">{yacht.rate}</span>
-						</div>
-					</div>
-				</a>
-			{/each}
+				{/each}
+			</div>
+
+			<div class="yacht-card-nav">
+				{#if activeIndex > 0}
+					<button
+						type="button"
+						class="yacht-arrow"
+						onclick={prevYacht}
+						aria-label="Previous yacht"
+						transition:scale={{ duration: 250, start: 0, opacity: 0 }}
+					>
+						<svg viewBox="0 0 24 24" aria-hidden="true">
+							<path d="M15 6l-6 6 6 6" />
+						</svg>
+					</button>
+				{/if}
+				<button type="button" class="yacht-arrow" onclick={nextYacht} aria-label="Next yacht">
+					<svg viewBox="0 0 24 24" aria-hidden="true">
+						<path d="M9 6l6 6-6 6" />
+					</svg>
+				</button>
+			</div>
 		</div>
 	</div>
 
@@ -172,7 +218,7 @@
 					type="button"
 					class="toggle-btn"
 					class:active={departureView === 'photos'}
-					onclick={() => departureView = 'photos'}
+					onclick={() => (departureView = 'photos')}
 				>
 					<svg viewBox="0 0 24 24" aria-hidden="true">
 						<rect x="3" y="3" width="18" height="18" rx="2" />
@@ -185,7 +231,7 @@
 					type="button"
 					class="toggle-btn"
 					class:active={departureView === 'map'}
-					onclick={() => departureView = 'map'}
+					onclick={() => (departureView = 'map')}
 				>
 					<svg viewBox="0 0 24 24" aria-hidden="true">
 						<path d="m9 18-6 3V7l6-3m0 14 6 3m-6-3V4m6 17 6-3V4l-6 3m0 14V7M9 4l6 3" />
@@ -225,7 +271,7 @@
 		display: grid;
 		grid-template-columns: 280px 1fr;
 		gap: var(--space-6, 24px);
-		max-width: 1360px;
+		max-width: 900px;
 		margin: 0 auto;
 		padding-left: clamp(var(--space-4, 16px), 3.5vw, var(--space-6, 24px));
 		padding-right: clamp(var(--space-4, 16px), 3.5vw, var(--space-6, 24px));
@@ -314,13 +360,15 @@
 	}
 
 	/* Track / Carousel */
+	.yachts-track-area {
+		position: relative;
+	}
+
 	.yachts-track {
 		display: flex;
-		gap: var(--space-4, 16px);
 		overflow-x: auto;
 		scroll-snap-type: x mandatory;
 		scroll-padding-left: 0;
-		padding-right: clamp(var(--space-4, 16px), 3.5vw, var(--space-6, 24px));
 		-ms-overflow-style: none;
 		scrollbar-width: none;
 	}
@@ -329,9 +377,12 @@
 		display: none;
 	}
 
-	.yacht-card {
-		flex: 0 0 clamp(320px, 56vw, 640px);
+	.yacht-card-wrapper {
+		flex: 0 0 100%;
 		scroll-snap-align: start;
+	}
+
+	.yacht-card {
 		display: flex;
 		flex-direction: column;
 		border-radius: var(--radius-lg, 12px);
@@ -342,6 +393,46 @@
 		transition: box-shadow var(--motion-duration-default, 0.3s) var(--motion-ease-standard, ease);
 	}
 
+	.yacht-card-nav {
+		position: absolute;
+		right: 0;
+		top: 15%;
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		gap: 6px;
+		background: var(--nav-bg, #f9f2f0);
+		padding: 5px 0 5px 5px;
+		border-radius: 26px 0 0 26px;
+		z-index: 2;
+	}
+
+	.yacht-arrow {
+		width: 42px;
+		height: 42px;
+		border-radius: 50%;
+		border: none;
+		background: var(--color-frosted-blue, #014cba);
+		cursor: pointer;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		transition: background var(--motion-duration-fast, 0.15s) var(--motion-ease-standard, ease);
+	}
+
+	.yacht-arrow:hover {
+		background: #0140a0;
+	}
+
+	.yacht-arrow svg {
+		width: 20px;
+		height: 20px;
+		fill: none;
+		stroke: #fff;
+		stroke-width: 2.5;
+		stroke-linecap: round;
+		stroke-linejoin: round;
+	}
 
 	.yacht-card-image {
 		position: relative;
@@ -466,8 +557,8 @@
 			display: none;
 		}
 
-		.yacht-card {
-			flex: 0 0 clamp(280px, 80vw, 480px);
+		.yacht-card-wrapper {
+			flex: 0 0 100%;
 		}
 	}
 
